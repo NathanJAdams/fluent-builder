@@ -203,7 +203,7 @@ type Book = {
 };
 
 const books = recordBuilder<Book>()
-  .addBuilder('').age(1).buildTimmy()
+  .addBuilder('Timmy').age(1).buildTimmy()
   .addBuilder('Sarah').age(4).buildSarah()
   .addBuilder('Timmy') // <- compile time error prevents overwriting entry previously added
   .age(1.5)
