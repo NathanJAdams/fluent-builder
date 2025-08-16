@@ -1,20 +1,37 @@
 import { describe, test, expect } from 'vitest';
 
-import { recordBuilder } from '../src';
+import { recordBuilder, subTypeInfoBuilder } from '../src';
 
-type Person = {
+type Animal = {
+  kind: string;
+};
+type Dog = Animal & {
+  kind: 'dog';
+  food: string;
+};
+type Human = Animal & {
+  kind: 'human';
+  age: number;
+};
+
+type Employee = {
   age: number;
   alive: boolean;
 };
 
+const subTypes = subTypeInfoBuilder()
+  .add<Animal, Dog | Human, 'kind'>()
+  .build();
+type MySubTypes = typeof subTypes;
+
 describe('record-builder', () => {
   describe('building', () => {
     test('builds a record type with literal entries', () => {
-      const people = recordBuilder<Person>()
-        .addBuilder('Jim').age(42).alive(true).build()
-        .addBuilder('Alice').age(39).alive(true).build()
-        .addBuilder('Edna').age(102).alive(false).build()
-        .build();
+      const people = recordBuilder<Employee>()
+        .addBuilder('Jim').age(42).alive(true).buildJim()
+        .addBuilder('Alice').age(39).alive(true).buildAlice()
+        .addBuilder('Edna').age(102).alive(false).buildEdna()
+        .buildRecord();
       expect(people.Jim.age).toBe(42);
       expect(people.Jim.alive).toBe(true);
       expect(people.Alice.age).toBe(39);
@@ -22,39 +39,47 @@ describe('record-builder', () => {
       expect(people.Edna.age).toBe(102);
       expect(people.Edna.alive).toBe(false);
     });
+    test('builds sub types', () => {
+      const animals = recordBuilder<Animal, MySubTypes>()
+        .addSubType('Sparky').kind('dog').food('sausage').buildSparky()
+        .addSubType('Jim').kind('human').age(55).buildJim()
+        .buildRecord();
+      expect(animals.Jim.kind).toBe('human');
+      expect(animals.Sparky.kind).toBe('dog');
+    });
   });
   describe('compile errors', () => {
     test('functions not backed by the type do not compile and would throw if ran', () => {
-      expect(() => recordBuilder<Person>().
+      expect(() => recordBuilder<Employee>().
         // @ts-expect-error
         abcdef
         ()).toThrow();
     });
     test('cannot add the same record twice even after other records have been added in between', () => {
-      recordBuilder<Person>()
+      recordBuilder<Employee>()
         .addBuilder('Olive')
         .age(70)
         .alive(false)
-        .build()
+        .buildOlive()
         .addBuilder('Frederick')
         .age(21)
         .alive(true)
-        .build()
+        .buildFrederick()
         .addBuilder('Ann')
         .age(70)
         .alive(false)
-        .build()
+        .buildAnn()
         // @ts-expect-error
         .addBuilder('Frederick');
     });
     test('build function is not available until all non-optional fields have been set', () => {
-      recordBuilder<Person>()
+      recordBuilder<Employee>()
         .addBuilder('Fred')
         // @ts-expect-error
         .build();
     });
     test('cannot use the same function twice even if other functions have been called in between', () => {
-      recordBuilder<Person>()
+      recordBuilder<Employee>()
         .addBuilder('John')
         .age(1)
         .alive(true)

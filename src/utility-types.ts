@@ -86,6 +86,10 @@ export type FindExactSubTypeInfo<
   : never
   : never;
 
-export type Builder<TBuilt> = {
-  build: () => TBuilt;
-};
+export type Builder<TBuilt, TBuildSuffix extends string> =
+  & {
+    build: () => TBuilt;
+  }
+  & {
+    [K in `build${Capitalize<TBuildSuffix>}`]: () => TBuilt;
+  };

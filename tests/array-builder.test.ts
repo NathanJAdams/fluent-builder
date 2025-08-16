@@ -1,6 +1,54 @@
 import { describe, test, expect } from 'vitest';
 
-import { arrayBuilder } from '../src';
+import { arrayBuilder, instanceBuilder, subTypeInfoBuilder } from '../src';
+
+
+type House = {
+  rooms: Room[];
+};
+type Room = {
+  furniture: RoomObject[];
+  windows: Record<string, Window>;
+};
+type RoomObject = {
+  kind: string;
+};
+type Chair = RoomObject & {
+  kind: 'chair';
+  legs: number;
+};
+type Table = RoomObject & {
+  kind: 'table';
+  width: number;
+  breadth: number;
+  height: number;
+};
+type Window = {
+  width: number;
+  height: number;
+  material: string;
+};
+
+const subTypes = subTypeInfoBuilder()
+  .add<RoomObject, Chair | Table, 'kind'>()
+  .build();
+type MySubTypes = typeof subTypes;
+
+const house = instanceBuilder<House, MySubTypes>()
+  .roomsArrayBuilder()
+  .add({ furniture: [], windows: {} })
+  .addBuilder()
+  .furnitureArrayBuilder()
+  .addSubTypeBuilder().kind('table').width(4).breadth(5).height(3).buildTable()
+  .buildFurniture()
+  .windowsRecordBuilder()
+  .addBuilder('front').height(3).width(4).material('pvc').buildFront()
+  .buildWindows()
+  .buildElement()
+  .buildRooms()
+  .build();
+
+
 
 type Employee = {
   name: string;
