@@ -12,6 +12,7 @@ type Dog = Animal & {
 type Human = Animal & {
   kind: 'human';
   age: number;
+  pets: Animal[];
 };
 
 type Employee = {
@@ -41,8 +42,8 @@ describe('record-builder', () => {
     });
     test('builds sub types', () => {
       const animals = recordBuilder<Animal, MySubTypes>()
-        .addSubType('Sparky').kind('dog').food('sausage').buildSparky()
-        .addSubType('Jim').kind('human').age(55).buildJim()
+        .addSubTypeBuilder('Sparky').kind('dog').food('sausage').buildSparky()
+        .addSubTypeBuilder('Jim').kind('human').age(55).petsArrayBuilder().addSubTypeBuilder().kind('dog').food('dog-food').buildDog().buildPets().buildJim()
         .buildRecord();
       expect(animals.Jim.kind).toBe('human');
       expect(animals.Sparky.kind).toBe('dog');
