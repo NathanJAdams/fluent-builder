@@ -10,7 +10,7 @@ type RecordEntryBuilder<TSubTypes extends readonly SubTypeInfo<any, any, any>[],
 };
 
 type RecordEntryArrayBuilder<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> = {
-  addArrayBuilder: <TName extends string>(name: UnusedName<TEntries, TName>) => ArrayBuilder<TSubTypes, ArrayElementType<TValue>, RecordBuilder<TSubTypes, TEntries & { [K in TName]: TValue }, TValue, TFinal, TBuildSuffix>, TBuildSuffix>;
+  addArrayBuilder: <TName extends string>(name: UnusedName<TEntries, TName>) => ArrayBuilder<TSubTypes, ArrayElementType<TValue>, RecordBuilder<TSubTypes, TEntries & { [K in TName]: TValue }, TValue, IsExact<TFinal, TEntries> extends true ? TEntries & { [K in TName]: TValue } : TFinal, TBuildSuffix>, TBuildSuffix>;
 };
 
 type RecordEntrySubTypeBuilder<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> = {
