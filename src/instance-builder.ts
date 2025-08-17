@@ -18,24 +18,24 @@ type ValueSetterFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], 
 
 type ArrayBuilderFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial> as IsSingleLevelArray<Required<TSchema>[K]> extends true ? `${K}${typeof ARRAY_SUFFIX}` : never]:
-  () => ArrayBuilder<TSubTypes, ArrayElementType<TSchema[K]>, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>;
+  () => ArrayBuilder<TSubTypes, ArrayElementType<Required<TSchema>[K]>, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>;
 };
 
 type SubTypeBuilderFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial> as IsABaseType<TSubTypes, Required<TSchema>[K]> extends true ? `${K}${typeof SUB_TYPE_SUFFIX}` : never]:
-  FindExactSubTypeInfo<TSubTypes, TSchema[K]> extends SubTypeInfo<infer TBase, infer TSubUnion, infer TDiscriminator>
+  FindExactSubTypeInfo<TSubTypes, Required<TSchema>[K]> extends SubTypeInfo<infer TBase, infer TSubUnion, infer TDiscriminator>
   ? () => SubTypeChooser<TSubTypes, TBase, TSubUnion, TDiscriminator, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
   : never;
 };
 
 type NonBaseUserTypeBuilderFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial> as IsANonBaseUserType<TSubTypes, Required<TSchema>[K]> extends true ? `${K}${typeof USER_TYPE_SUFFIX}` : never]:
-  () => InstanceBuilder<TSubTypes, TSchema[K], {}, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
+  () => InstanceBuilder<TSubTypes, Required<TSchema>[K], {}, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
 };
 
 type RecordBuilderFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial> as HasOnlyIndexSignature<Required<TSchema>[K]> extends true ? `${K}${typeof RECORD_SUFFIX}` : never]:
-  () => RecordBuilder<TSubTypes, {}, RecordValueType<TSchema[K]>, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
+  () => RecordBuilder<TSubTypes, {}, RecordValueType<Required<TSchema>[K]>, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
 };
 
 export type InstanceBuilder<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> =

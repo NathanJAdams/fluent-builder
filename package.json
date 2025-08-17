@@ -1,7 +1,7 @@
 {
   "name": "ts-fluent-builder",
   "description": "A TypeScript library for building types - 100% fluent, arbitrarily nested, zero/de minimis config with compile-time type & data safety mechanisms.",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "author": {
     "name": "Nathan Adams",
     "url": "https://github.com/NathanJAdams"
