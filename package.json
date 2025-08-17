@@ -1,7 +1,7 @@
 {
   "name": "ts-fluent-builder",
   "description": "A TypeScript library for building types - 100% fluent, arbitrarily nested, zero/de minimis config with compile-time type & data safety mechanisms.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": {
     "name": "Nathan Adams",
     "url": "https://github.com/NathanJAdams"
@@ -45,6 +45,7 @@
     "@typescript-eslint/parser": "^8.38.0",
     "eslint": "^9.32.0",
     "eslint-plugin-import": "^2.32.0",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",

@@ -2,7 +2,7 @@ import { ArrayBuilder, arrayBuilderInternal } from './array-builder';
 import { InstanceBuilder, instanceBuilderInternal } from './instance-builder';
 import { RecordBuilder, recordBuilderInternal } from './record-builder';
 import { SubTypeBuilder, subTypeBuilderInternal } from './sub-type-builder';
-import { subTypeInfoBuilderInternal } from './sub-type-info-builder';
+import { SubTypeInfoBuilder, subTypeInfoBuilderInternal } from './sub-type-info-builder';
 import { IsABaseType, IsUserType, SubTypeInfo } from './utility-types';
 
 export const arrayBuilder = <TElement, TSubTypes extends readonly SubTypeInfo<any, any, any>[] = []>()
@@ -28,4 +28,6 @@ export const subTypeBuilder = <TBase extends Record<string, any>, TSubTypes exte
   return subTypeBuilderInternal<TSubTypes, TBase, TBase>();
 };
 
-export const subTypeInfoBuilder = () => subTypeInfoBuilderInternal([] as const);
+export const subTypeInfoBuilder = (): SubTypeInfoBuilder<[]> => {
+  return subTypeInfoBuilderInternal([] as const);
+};
