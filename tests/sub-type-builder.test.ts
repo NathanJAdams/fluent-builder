@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 
-import { subTypeBuilder, subTypeInfoBuilder } from '../src';
+import { subTypeBuilder, subTypeRegistryBuilder } from '../src';
 
 type Root = {
   kind: string;
@@ -25,25 +25,20 @@ type SubB2 = Root2 & {
   b: boolean;
 };
 
-const subTypes = subTypeInfoBuilder()
+const subTypeRegistry = subTypeRegistryBuilder()
   .add<Root, SubA | SubB, 'kind'>()
   .build();
-const subTypes2 = subTypeInfoBuilder()
-  .add<Root, SubA | SubB, 'kind'>()
-  .add<Root2, SubA2 | SubB2, 'kind2'>()
-  .build();
-type MySubTypes = typeof subTypes;
-type MySubTypes2 = typeof subTypes2;
+type MySubTypeRegistry = typeof subTypeRegistry;
 
 describe('sub-type-builder', () => {
   describe('building', () => {
     test('builds an object of sub-type', () => {
-      const exampleA = subTypeBuilder<Root, MySubTypes>().kind('a').a(1).buildA();
+      const exampleA = subTypeBuilder<Root, MySubTypeRegistry>().kind('a').a(1).buildA();
       expect(exampleA.kind).toBe('a');
       expect((exampleA as SubA).a).toBe(1);
       expect((exampleA as SubB).b).toBe(undefined);
 
-      const exampleB = subTypeBuilder<Root, MySubTypes>().kind('b').b(true).buildB();
+      const exampleB = subTypeBuilder<Root, MySubTypeRegistry>().kind('b').b(true).buildB();
       expect(exampleB.kind).toBe('b');
       expect((exampleB as SubB).b).toBe(true);
       expect((exampleB as SubA).a).toBe(undefined);
@@ -59,21 +54,21 @@ describe('sub-type-builder', () => {
     test('type must be a base type', () => {
       // @ts-expect-error
       subTypeBuilder
-        <SubA, MySubTypes>();
+        <SubA, MySubTypeRegistry>();
     });
     test('base type is not available if not in sub types', () => {
       // @ts-expect-error
       subTypeBuilder
-        <Root2, MySubTypes>();
+        <Root2, MySubTypeRegistry>();
     });
     test('first function is always the discriminator', () => {
-      subTypeBuilder<Root, MySubTypes>().
+      subTypeBuilder<Root, MySubTypeRegistry>().
         // @ts-expect-error
         a
         (1);
     });
     test('cannot choose a discriminator if not one of the sub types', () => {
-      subTypeBuilder<Root, MySubTypes>().kind(
+      subTypeBuilder<Root, MySubTypeRegistry>().kind(
         // @ts-expect-error
         'xyz'
       );

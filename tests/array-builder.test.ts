@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 
-import { arrayBuilder, instanceBuilder, subTypeInfoBuilder } from '../src';
+import { arrayBuilder, instanceBuilder, subTypeRegistryBuilder } from '../src';
 
 
 type House = {
@@ -29,12 +29,12 @@ type Window = {
   material: string;
 };
 
-const subTypes = subTypeInfoBuilder()
+const subTypeRegistry = subTypeRegistryBuilder()
   .add<RoomObject, Chair | Table, 'kind'>()
   .build();
-type MySubTypes = typeof subTypes;
+type MySubTypeRegistry = typeof subTypeRegistry;
 
-const house = instanceBuilder<House, MySubTypes>()
+const house = instanceBuilder<House, MySubTypeRegistry>()
   .roomsArrayBuilder()
   .add({ furniture: [], windows: {} })
   .addBuilder()

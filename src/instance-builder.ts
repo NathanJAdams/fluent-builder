@@ -1,7 +1,7 @@
 import { ArrayBuilder, arrayBuilderInternal } from './array-builder';
 import { RecordBuilder, recordBuilderInternal } from './record-builder';
 import { subTypeBuilderInternal, SubTypeChooser } from './sub-type-builder';
-import { ArrayElementType, Builder, FindExactSubTypeInfo, HasOnlyIndexSignature, HasRequiredKeys, IsABaseType, IsANonBaseUserType, IsSingleLevelArray, RecordValueType, SubTypeInfo } from './utility-types';
+import { ArrayElementType, Builder, FindExactSubTypeMetadata, HasOnlyIndexSignature, HasRequiredKeys, IsABaseType, IsANonBaseUserType, IsSingleLevelArray, RecordValueType, SubTypeMetadata } from './utility-types';
 
 const BUILDER_SUFFIX = 'Builder';
 const USER_TYPE_SUFFIX = BUILDER_SUFFIX;
@@ -11,45 +11,45 @@ const ARRAY_SUFFIX = `Array${BUILDER_SUFFIX}`;
 
 type UnusedKeys<TSchema extends Record<string, any>, TPartial extends Partial<TSchema>> = string & Exclude<keyof TSchema, keyof TPartial>;
 
-type ValueSetterFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+type ValueSetterFields<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial>]:
-  (value: TSchema[K]) => InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>;
+  (value: TSchema[K]) => InstanceBuilder<TSubTypeRegistry, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>;
 };
 
-type ArrayBuilderFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+type ArrayBuilderFields<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial> as IsSingleLevelArray<Required<TSchema>[K]> extends true ? `${K}${typeof ARRAY_SUFFIX}` : never]:
-  () => ArrayBuilder<TSubTypes, ArrayElementType<Required<TSchema>[K]>, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>;
+  () => ArrayBuilder<TSubTypeRegistry, ArrayElementType<Required<TSchema>[K]>, InstanceBuilder<TSubTypeRegistry, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>;
 };
 
-type SubTypeBuilderFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
-  [K in UnusedKeys<TSchema, TPartial> as IsABaseType<TSubTypes, Required<TSchema>[K]> extends true ? `${K}${typeof SUB_TYPE_SUFFIX}` : never]:
-  FindExactSubTypeInfo<TSubTypes, Required<TSchema>[K]> extends SubTypeInfo<infer TBase, infer TSubUnion, infer TDiscriminator>
-  ? () => SubTypeChooser<TSubTypes, TBase, TSubUnion, TDiscriminator, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
+type SubTypeBuilderFields<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+  [K in UnusedKeys<TSchema, TPartial> as IsABaseType<TSubTypeRegistry, Required<TSchema>[K]> extends true ? `${K}${typeof SUB_TYPE_SUFFIX}` : never]:
+  FindExactSubTypeMetadata<TSubTypeRegistry, Required<TSchema>[K]> extends SubTypeMetadata<infer TBase, infer TSubUnion, infer TDiscriminator>
+  ? () => SubTypeChooser<TSubTypeRegistry, TBase, TSubUnion, TDiscriminator, InstanceBuilder<TSubTypeRegistry, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
   : never;
 };
 
-type NonBaseUserTypeBuilderFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
-  [K in UnusedKeys<TSchema, TPartial> as IsANonBaseUserType<TSubTypes, Required<TSchema>[K]> extends true ? `${K}${typeof USER_TYPE_SUFFIX}` : never]:
-  () => InstanceBuilder<TSubTypes, Required<TSchema>[K], {}, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
+type NonBaseUserTypeBuilderFields<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+  [K in UnusedKeys<TSchema, TPartial> as IsANonBaseUserType<TSubTypeRegistry, Required<TSchema>[K]> extends true ? `${K}${typeof USER_TYPE_SUFFIX}` : never]:
+  () => InstanceBuilder<TSubTypeRegistry, Required<TSchema>[K], {}, InstanceBuilder<TSubTypeRegistry, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
 };
 
-type RecordBuilderFields<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+type RecordBuilderFields<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial> as HasOnlyIndexSignature<Required<TSchema>[K]> extends true ? `${K}${typeof RECORD_SUFFIX}` : never]:
-  () => RecordBuilder<TSubTypes, {}, RecordValueType<Required<TSchema>[K]>, InstanceBuilder<TSubTypes, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
+  () => RecordBuilder<TSubTypeRegistry, {}, RecordValueType<Required<TSchema>[K]>, InstanceBuilder<TSubTypeRegistry, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
 };
 
-export type InstanceBuilder<TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> =
+export type InstanceBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> =
   & (HasRequiredKeys<TSchema, TPartial> extends true ? object : Builder<TFinal, TBuildSuffix>)
-  & ValueSetterFields<TSubTypes, TSchema, TPartial, TFinal, TBuildSuffix>
-  & ArrayBuilderFields<TSubTypes, TSchema, TPartial, TFinal, TBuildSuffix>
-  & SubTypeBuilderFields<TSubTypes, TSchema, TPartial, TFinal, TBuildSuffix>
-  & NonBaseUserTypeBuilderFields<TSubTypes, TSchema, TPartial, TFinal, TBuildSuffix>
-  & RecordBuilderFields<TSubTypes, TSchema, TPartial, TFinal, TBuildSuffix>
+  & ValueSetterFields<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & ArrayBuilderFields<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & SubTypeBuilderFields<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & NonBaseUserTypeBuilderFields<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & RecordBuilderFields<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
   ;
 
-export const instanceBuilderInternal = <TSubTypes extends readonly SubTypeInfo<any, any, any>[], TSchema extends Record<string, any>, TFinal, TBuildSuffix extends string>(
+export const instanceBuilderInternal = <TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TSchema extends Record<string, any>, TFinal, TBuildSuffix extends string>(
   finalizer: (built: TSchema) => TFinal = (built) => built as unknown as TFinal,
-): InstanceBuilder<TSubTypes, TSchema, {}, TFinal, TBuildSuffix> => {
+): InstanceBuilder<TSubTypeRegistry, TSchema, {}, TFinal, TBuildSuffix> => {
   const values = {} as TSchema;
   const handler: ProxyHandler<any> = {
     get(_, property: string) {
@@ -100,6 +100,6 @@ export const instanceBuilderInternal = <TSubTypes extends readonly SubTypeInfo<a
       };
     }
   };
-  const proxy = new Proxy({}, handler) as InstanceBuilder<TSubTypes, TSchema, {}, TFinal, TBuildSuffix>;
+  const proxy = new Proxy({}, handler) as InstanceBuilder<TSubTypeRegistry, TSchema, {}, TFinal, TBuildSuffix>;
   return proxy;
 };

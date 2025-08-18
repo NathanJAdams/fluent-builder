@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 
-import { subTypeInfoBuilder } from '../src';
+import { subTypeRegistryBuilder } from '../src';
 
 type Root = {
   kind: string;
@@ -59,29 +59,19 @@ type AlteredSubB = AlteredRootStructure & {
   kind: 'duplicateB';
 };
 
-const subTypes = subTypeInfoBuilder()
-  .add<Root, SubA | SubB, 'kind'>()
-  .build();
-const subTypes2 = subTypeInfoBuilder()
-  .add<Root, SubA | SubB, 'kind'>()
-  .add<Root2, SubA2 | SubB2, 'kind2'>()
-  .build();
-type MySubTypes = typeof subTypes;
-type MySubTypes2 = typeof subTypes2;
-
-describe('sub-type-info-builder', () => {
+describe('sub-type-registry-builder', () => {
   describe('building', () => {
-    test('can build an array of sub-type-info', () => {
-      const subTypeInfoArray = subTypeInfoBuilder()
+    test('can build an array of sub-type-metadata', () => {
+      const subTypeRegistry = subTypeRegistryBuilder()
         .add<Root, SubA | SubB, 'kind'>()
         .add<Root2, SubA2 | SubB2, 'kind2'>()
         .build();
-      expect(subTypeInfoArray.length).toBe(2);
+      expect(subTypeRegistry.length).toBe(2);
     });
   });
   describe('compile errors', () => {
-    test('cannot add the same sub info type twice even after adding others in between', () => {
-      subTypeInfoBuilder()
+    test('cannot add the same sub type metadata type twice even after adding others in between', () => {
+      subTypeRegistryBuilder()
         .add<Root, SubA | SubB, 'kind'>()
         .add<Root2, SubA2 | SubB2, 'kind2'>()
         .add<Root, SubA | SubB, 'kind'>().
@@ -91,7 +81,7 @@ describe('sub-type-info-builder', () => {
         .build();
     });
     test('cannot add a base type if it has the exact same structure as one already added, no way to distinguish which type to use', () => {
-      subTypeInfoBuilder()
+      subTypeRegistryBuilder()
         .add<Root, SubA | SubB, 'kind'>()
         .add<DuplicateRootStructure, DuplicateSubA | DuplicateSubB, 'kind'>().
         // @ts-expect-error
@@ -100,14 +90,14 @@ describe('sub-type-info-builder', () => {
         .build();
     });
     test('can add a base type even if it has the same discriminator as long as the structure is different to ones previously added', () => {
-      subTypeInfoBuilder()
+      subTypeRegistryBuilder()
         .add<Root, SubA | SubB, 'kind'>()
         .add<AlteredRootStructure, AlteredSubA | AlteredSubB, 'kind'>()
         .add<Root3, SubA3 | SubB3, 'kind3'>()
         .build();
     });
     test('cannot add a sub type if it does not extend the base type', () => {
-      subTypeInfoBuilder()
+      subTypeRegistryBuilder()
         .add<Root,
           // @ts-expect-error
           SubA2
@@ -115,7 +105,7 @@ describe('sub-type-info-builder', () => {
         .build();
     });
     test('cannot use a discriminator if it does not appear in the base type', () => {
-      subTypeInfoBuilder()
+      subTypeRegistryBuilder()
         .add<Root, SubA | SubB,
           // @ts-expect-error
           'non-existent-discriminator'

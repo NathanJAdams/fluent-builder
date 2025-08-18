@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 
-import { recordBuilder, subTypeInfoBuilder } from '../src';
+import { recordBuilder, subTypeRegistryBuilder } from '../src';
 
 type Animal = {
   kind: string;
@@ -20,10 +20,10 @@ type Employee = {
   alive: boolean;
 };
 
-const subTypes = subTypeInfoBuilder()
+const subTypeRegistry = subTypeRegistryBuilder()
   .add<Animal, Dog | Human, 'kind'>()
   .build();
-type MySubTypes = typeof subTypes;
+type MySubTypeRegistry = typeof subTypeRegistry;
 
 describe('record-builder', () => {
   describe('building', () => {
@@ -41,7 +41,7 @@ describe('record-builder', () => {
       expect(people.Edna.alive).toBe(false);
     });
     test('builds sub types', () => {
-      const animals = recordBuilder<Animal, MySubTypes>()
+      const animals = recordBuilder<Animal, MySubTypeRegistry>()
         .addSubTypeBuilder('Sparky').kind('dog').food('sausage').buildSparky()
         .addSubTypeBuilder('Jim').kind('human').age(55).petsArrayBuilder().addSubTypeBuilder().kind('dog').food('dog-food').buildDog().buildPets().buildJim()
         .buildRecord();

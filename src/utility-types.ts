@@ -40,19 +40,19 @@ export type IsUserType<T> =
   : true
   : false;
 
-export type IsABaseType<TSubTypes extends readonly SubTypeInfo<any, any, any>[], T> =
-  TSubTypes extends readonly [infer Head, ...infer Tail]
-  ? Head extends SubTypeInfo<infer TBase, any, any>
+export type IsABaseType<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], T> =
+  TSubTypeRegistry extends readonly [infer Head, ...infer Tail]
+  ? Head extends SubTypeMetadata<infer TBase, any, any>
   ? IsExact<T, TBase> extends true
   ? true
-  : Tail extends readonly SubTypeInfo<any, any, any>[]
+  : Tail extends readonly SubTypeMetadata<any, any, any>[]
   ? IsABaseType<Tail, T>
   : false
   : false
   : false;
 
-export type IsANonBaseUserType<TSubTypes extends readonly SubTypeInfo<any, any, any>[], T> =
-  IsABaseType<TSubTypes, T> extends true
+export type IsANonBaseUserType<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], T> =
+  IsABaseType<TSubTypeRegistry, T> extends true
   ? false
   : IsUserType<T>;
 
@@ -62,7 +62,7 @@ export type RequiredKeys<T> = {
 
 export type HasRequiredKeys<TSchema, TPartial extends Partial<TSchema>> = Exclude<RequiredKeys<TSchema>, keyof TPartial> extends never ? false : true;
 
-export type SubTypeInfo<
+export type SubTypeMetadata<
   TBase extends Record<string, any>,
   TSubUnion extends TBase,
   TDiscriminator extends keyof TBase & string
@@ -72,16 +72,16 @@ export type SubTypeInfo<
   __discriminator: TDiscriminator;
 };
 
-export type FindExactSubTypeInfo<
-  TSubTypes extends readonly SubTypeInfo<any, any, any>[],
+export type FindExactSubTypeMetadata<
+  TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[],
   TType
 > =
-  TSubTypes extends readonly [infer Head, ...infer Tail]
-  ? Head extends SubTypeInfo<infer TBase, infer TSubUnion, infer TDiscriminator>
+  TSubTypeRegistry extends readonly [infer Head, ...infer Tail]
+  ? Head extends SubTypeMetadata<infer TBase, infer TSubUnion, infer TDiscriminator>
   ? IsExact<TType, TBase> extends true
-  ? SubTypeInfo<TBase, TSubUnion, TDiscriminator>
-  : Tail extends readonly SubTypeInfo<any, any, any>[]
-  ? FindExactSubTypeInfo<Tail, TType>
+  ? SubTypeMetadata<TBase, TSubUnion, TDiscriminator>
+  : Tail extends readonly SubTypeMetadata<any, any, any>[]
+  ? FindExactSubTypeMetadata<Tail, TType>
   : never
   : never
   : never;

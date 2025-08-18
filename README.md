@@ -30,7 +30,7 @@ There are 4 types of object which `ts-fluent-builder` can build:
 - A user defined type
 - An array
 - A record
-- A sub type of a user defined type
+- A sub type of a user defined base type
 
 #### User defined type
 
@@ -88,12 +88,12 @@ const timmyAge = children.Timmy.age;
 const aliceHairColor = children.Alice.hairColor;
 ```
 
-#### SubType of user defined type
+#### SubType of user defined base type
 
 Sometimes a type is a base type which shouldn't be built directly, but might still need to be used as a field type. To let ts-fluent-builder know which types are available requires a small amount of config which can itself be built via generic parameters.
 
 ```typescript
-import { subTypeBuilder, subTypeInfoBuilder } from 'ts-fluent-builder';
+import { subTypeBuilder, subTypeRegistryBuilder } from 'ts-fluent-builder';
 
 type Vehicle = {
   vehicleType: string;
@@ -108,10 +108,10 @@ type Truck = Vehicle & {
   haulageCapacity: number;
 };
 
-const subTypes = subTypeInfoBuilder()
+const subTypeRegistry = subTypeRegistryBuilder()
   .add<Vehicle, Bike | Truck, 'vehicleType'>()
   .build();
-type MySubTypes = typeof subTypes;
+type MySubTypeRegistry = typeof subTypeRegistry;
 ```
 
 The 3 generic parameters are, in order:
@@ -123,7 +123,7 @@ The 3 generic parameters are, in order:
 The `type` of the resulting sub types array will be needed for building objects as shown here
 
 ```typescript
-const bike = subTypeBuilder<Vehicle, MySubTypes>()
+const bike = subTypeBuilder<Vehicle, MySubTypeRegistry>()
   .vehicleType('bike')
   .color('blue')
   .wheelSpokes(48)
@@ -216,7 +216,7 @@ const books = recordBuilder<Book>()
 Arbitrarily deep nesting is supported, only limited by the compiler. Future releases may allow configuring a limit on this.
 
 ```typescript
-import { instanceBuilder, subTypeInfoBuilder } from 'ts-fluent-builder';
+import { instanceBuilder, subTypeRegistryBuilder } from 'ts-fluent-builder';
 
 type House = {
   rooms: Room[];
@@ -244,12 +244,12 @@ type Window = {
   material: string;
 };
 
-const subTypes = subTypeInfoBuilder()
+const subTypeRegistry = subTypeRegistryBuilder()
   .add<RoomObject, Chair | Table, 'kind'>()
   .build();
-type MySubTypes = typeof subTypes;
+type MySubTypeRegistry = typeof subTypeRegistry;
 
-const house = instanceBuilder<House, MySubTypes>()
+const house = instanceBuilder<House, MySubTypeRegistry>()
   .roomsArrayBuilder()
   .add({ furniture: [], windows: {} })
   .addBuilder()
