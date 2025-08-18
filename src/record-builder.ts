@@ -14,9 +14,9 @@ type RecordEntryArrayBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<a
 };
 
 type RecordEntrySubTypeBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> = {
-  addSubTypeBuilder: FindExactSubTypeMetadata<TSubTypeRegistry, TValue> extends SubTypeMetadata<infer TBase, infer TSubUnion, infer TDiscriminator>
+  addSubTypeBuilder: FindExactSubTypeMetadata<TSubTypeRegistry, TValue> extends SubTypeMetadata<infer TBase, infer TSubTypes, infer TDiscriminator>
   ? <TName extends string>(name: UnusedName<TEntries, TName>) => SubTypeChooser<
-    TSubTypeRegistry, TBase, TSubUnion, TDiscriminator,
+    TSubTypeRegistry, TBase, TSubTypes, TDiscriminator,
     RecordBuilder<TSubTypeRegistry, TEntries & { [K in TName]: TValue }, TValue, IsExact<TFinal, TEntries> extends true ? TEntries & { [K in TName]: TValue } : TFinal, TBuildSuffix>,
     UnusedName<TEntries, TName>
   >

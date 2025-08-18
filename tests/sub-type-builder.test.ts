@@ -26,7 +26,7 @@ type SubB2 = Root2 & {
 };
 
 const subTypeRegistry = subTypeRegistryBuilder()
-  .add<Root, SubA | SubB, 'kind'>()
+  .add<Root, [SubA, SubB], 'kind'>()
   .build();
 type MySubTypeRegistry = typeof subTypeRegistry;
 

@@ -7,8 +7,8 @@ type ArrayElementsBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<any,
 };
 
 type ArrayElementsSubTypeBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TElement, TFinal, TBuildSuffix extends string> = {
-  addSubTypeBuilder: FindExactSubTypeMetadata<TSubTypeRegistry, TElement> extends SubTypeMetadata<infer TBase, infer TSubUnion, infer TDiscriminator>
-  ? () => SubTypeChooser<TSubTypeRegistry, TBase, TSubUnion, TDiscriminator, ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>>
+  addSubTypeBuilder: FindExactSubTypeMetadata<TSubTypeRegistry, TElement> extends SubTypeMetadata<infer TBase, infer TSubTypes, infer TDiscriminator>
+  ? () => SubTypeChooser<TSubTypeRegistry, TBase, TSubTypes, TDiscriminator, ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>>
   : never;
 };
 

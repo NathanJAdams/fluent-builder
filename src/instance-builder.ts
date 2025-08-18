@@ -23,8 +23,8 @@ type ArrayBuilderFields<TSubTypeRegistry extends readonly SubTypeMetadata<any, a
 
 type SubTypeBuilderFields<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TSchema extends Record<string, any>, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial> as IsABaseType<TSubTypeRegistry, Required<TSchema>[K]> extends true ? `${K}${typeof SUB_TYPE_SUFFIX}` : never]:
-  FindExactSubTypeMetadata<TSubTypeRegistry, Required<TSchema>[K]> extends SubTypeMetadata<infer TBase, infer TSubUnion, infer TDiscriminator>
-  ? () => SubTypeChooser<TSubTypeRegistry, TBase, TSubUnion, TDiscriminator, InstanceBuilder<TSubTypeRegistry, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
+  FindExactSubTypeMetadata<TSubTypeRegistry, Required<TSchema>[K]> extends SubTypeMetadata<infer TBase, infer TSubTypes, infer TDiscriminator>
+  ? () => SubTypeChooser<TSubTypeRegistry, TBase, TSubTypes, TDiscriminator, InstanceBuilder<TSubTypeRegistry, TSchema, TPartial & { [P in K]: TSchema[K] }, TFinal, TBuildSuffix>, K>
   : never;
 };
 

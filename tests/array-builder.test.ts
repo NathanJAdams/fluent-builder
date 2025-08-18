@@ -30,7 +30,7 @@ type Window = {
 };
 
 const subTypeRegistry = subTypeRegistryBuilder()
-  .add<RoomObject, Chair | Table, 'kind'>()
+  .add<RoomObject, [Chair, Table], 'kind'>()
   .build();
 type MySubTypeRegistry = typeof subTypeRegistry;
 

@@ -21,7 +21,7 @@ type Employee = {
 };
 
 const subTypeRegistry = subTypeRegistryBuilder()
-  .add<Animal, Dog | Human, 'kind'>()
+  .add<Animal, [Dog, Human], 'kind'>()
   .build();
 type MySubTypeRegistry = typeof subTypeRegistry;
 

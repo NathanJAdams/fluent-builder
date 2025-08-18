@@ -69,11 +69,11 @@ export type HasRequiredKeys<TSchema, TPartial extends Partial<TSchema>> = Exclud
 
 export type SubTypeMetadata<
   TBase extends Record<string, any>,
-  TSubUnion extends TBase,
+  TSubTypes extends TBase[],
   TDiscriminator extends keyof TBase & string
 > = {
   __base: TBase;
-  __subunion: TSubUnion;
+  __subtypes: TSubTypes;
   __discriminator: TDiscriminator;
 };
 
@@ -82,9 +82,9 @@ export type FindExactSubTypeMetadata<
   TType
 > =
   TSubTypeRegistry extends readonly [infer Head, ...infer Tail]
-  ? Head extends SubTypeMetadata<infer TBase, infer TSubUnion, infer TDiscriminator>
+  ? Head extends SubTypeMetadata<infer TBase, infer TSubTypes, infer TDiscriminator>
   ? IsExact<TType, TBase> extends true
-  ? SubTypeMetadata<TBase, TSubUnion, TDiscriminator>
+  ? SubTypeMetadata<TBase, TSubTypes, TDiscriminator>
   : Tail extends readonly SubTypeMetadata<any, any, any>[]
   ? FindExactSubTypeMetadata<Tail, TType>
   : never
