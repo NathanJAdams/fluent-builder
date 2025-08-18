@@ -20,6 +20,11 @@ export type ArrayElementType<T> = T extends (infer U)[] ? U : never;
 
 export type RecordValueType<T> = T extends Record<string, infer V> ? V : never;
 
+export type UnionToIntersection<U> =
+  (U extends any ? (arg: U) => void : never) extends (arg: infer I) => void
+  ? I
+  : never;
+
 export type HasOnlyIndexSignature<T> =
   keyof T extends string | number
   ? string extends keyof T
