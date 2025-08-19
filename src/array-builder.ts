@@ -1,62 +1,75 @@
-import { InstanceBuilder, instanceBuilderInternal } from './instance-builder';
-import { subTypeBuilderInternal, SubTypeChooser } from './sub-type-builder';
-import { Builder, FindExactSubTypeMetadata, IsABaseType, IsANonBaseUserType, SubTypeMetadata } from './utility-types';
+import { InstanceBuilder } from './instance-builder';
+import { RecordBuilder } from './record-builder';
+import { SubTypeBuilder } from './sub-type-builder';
+import { ArrayElementType, AsNonBaseUserType, Builder, AsSubTypeMetadata, HasOnlyIndexSignature, RecordValueType, SubTypeMetadata } from './utility-types';
 
-type ArrayElementsBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TElement, TFinal, TBuildSuffix extends string> = {
-  add: (value: TElement) => ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>;
+type ArrayBuilderValue<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> = {
+  push: (value: TElement) => ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>;
 };
 
-type ArrayElementsSubTypeBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TElement, TFinal, TBuildSuffix extends string> = {
-  addSubTypeBuilder: FindExactSubTypeMetadata<TSubTypeRegistry, TElement> extends SubTypeMetadata<infer TBase, infer TSubTypes, infer TDiscriminator>
-  ? () => SubTypeChooser<TSubTypeRegistry, TBase, TSubTypes, TDiscriminator, ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>>
-  : never;
-};
+type ArrayBuilderArray<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
+  TElement extends any[]
+  ? {
+    pushArray: () =>
+      ArrayBuilder<
+        TSubTypeRegistry,
+        ArrayElementType<TElement>,
+        ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>,
+        'Array'
+      >;
+  }
+  : object;
 
-type ArrayElementsNonBaseUserTypeBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TSchema extends Record<string, any>, TFinal, TBuildSuffix extends string> = {
-  addBuilder: () => InstanceBuilder<TSubTypeRegistry, TSchema, {}, ArrayBuilder<TSubTypeRegistry, TSchema, TFinal, TBuildSuffix>, 'Element'>;
-};
+type ArrayBuilderRecord<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
+  HasOnlyIndexSignature<TElement> extends true
+  ? {
+    pushRecord: () =>
+      RecordBuilder<
+        TSubTypeRegistry,
+        RecordValueType<TElement>,
+        ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>,
+        'Record'
+      >;
+  }
+  : object;
 
-export type ArrayBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TElement, TFinal, TBuildSuffix extends string> =
-  & Builder<TFinal, TBuildSuffix>
-  & ArrayElementsBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
-  & (IsABaseType<TSubTypeRegistry, TElement> extends true ? ArrayElementsSubTypeBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix> : object)
-  & (IsANonBaseUserType<TSubTypeRegistry, TElement> extends true ? TElement extends Record<string, any> ? ArrayElementsNonBaseUserTypeBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix> : object : object)
-  ;
+type ArrayBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
+  AsSubTypeMetadata<TSubTypeRegistry, TElement> extends SubTypeMetadata<infer TBase, infer TSubUnion>
+  ? {
+    pushSubType: () =>
+      SubTypeBuilder<
+        TSubTypeRegistry,
+        TBase,
+        TSubUnion,
+        ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>,
+        'Element'
+      >;
+  }
+  : object;
 
-export const arrayBuilderInternal = <TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TElement, TFinal, TBuildSuffix extends string>(
-  finalizer: (built: TElement[]) => TFinal = (built) => built as unknown as TFinal,
-): ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix> => {
-  const array: TElement[] = [];
-  const handler: ProxyHandler<any> = {
-    get(_, property: string) {
-      if (property.startsWith('build')) {
-        return () => finalizer(array);
-      }
-      if (property === 'add') {
-        return (value: TElement) => {
-          array.push(value);
-          return proxy;
-        };
-      }
-      if (property === 'addSubTypeBuilder') {
-        return () => {
-          return subTypeBuilderInternal(value => {
-            array.push(value as TElement);
-            return proxy;
-          });
-        };
-      }
-      if (property === 'addBuilder') {
-        return () => {
-          return instanceBuilderInternal(value => {
-            array.push(value as TElement);
-            return proxy;
-          });
-        };
-      }
-      throw Error(`Unrecognized function ${property}()`);
-    }
+type ArrayBuilderInstance<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
+  AsNonBaseUserType<TSubTypeRegistry, TElement> extends never
+  ? object
+  : {
+    pushInstance: () =>
+      InstanceBuilder<
+        TSubTypeRegistry,
+        TElement,
+        ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>,
+        'Element'
+      >;
   };
-  const proxy = new Proxy({}, handler) as ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>;
-  return proxy;
-};
+
+export type ArrayBuilder<
+  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TElement,
+  TFinal,
+  TBuildSuffix extends string
+> =
+  & Builder<TFinal, TBuildSuffix>
+  & ArrayBuilderValue<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
+  & ArrayBuilderArray<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
+  & ArrayBuilderRecord<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
+  & ArrayBuilderSubType<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
+  & ArrayBuilderInstance<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
+  ;

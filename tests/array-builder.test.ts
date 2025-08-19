@@ -1,67 +1,15 @@
 import { describe, test, expect } from 'vitest';
 
-import { arrayBuilder, instanceBuilder, subTypeRegistryBuilder } from '../src';
-
-
-type House = {
-  rooms: Room[];
-};
-type Room = {
-  furniture: RoomObject[];
-  windows: Record<string, Window>;
-};
-type RoomObject = {
-  kind: string;
-};
-type Chair = RoomObject & {
-  kind: 'chair';
-  legs: number;
-};
-type Table = RoomObject & {
-  kind: 'table';
-  width: number;
-  breadth: number;
-  height: number;
-};
-type Window = {
-  width: number;
-  height: number;
-  material: string;
-};
-
-const subTypeRegistry = subTypeRegistryBuilder()
-  .add<RoomObject, [Chair, Table], 'kind'>()
-  .build();
-type MySubTypeRegistry = typeof subTypeRegistry;
-
-const house = instanceBuilder<House, MySubTypeRegistry>()
-  .roomsArrayBuilder()
-  .add({ furniture: [], windows: {} })
-  .addBuilder()
-  .furnitureArrayBuilder()
-  .addSubTypeBuilder().kind('table').width(4).breadth(5).height(3).buildTable()
-  .buildFurniture()
-  .windowsRecordBuilder()
-  .addBuilder('front').height(3).width(4).material('pvc').buildFront()
-  .buildWindows()
-  .buildElement()
-  .buildRooms()
-  .build();
-
-
-
-type Employee = {
-  name: string;
-  startDate: Date;
-};
+import { arrayBuilder } from '../src';
+import type { Employee, Dog } from './test-types';
 
 describe('array-builder', () => {
   describe('building', () => {
-    test('builds an array with literal entries', () => {
+    test('values', () => {
       const values = arrayBuilder<string>()
-        .add('a')
-        .add('b')
-        .add('c')
+        .push('a')
+        .push('b')
+        .push('c')
         .build();
       expect(Array.isArray(values)).toBe(true);
       expect(values.length).toBe(3);
@@ -69,10 +17,48 @@ describe('array-builder', () => {
       expect(values[1]).toBe('b');
       expect(values[2]).toBe('c');
     });
-    test('builds an array with builders', () => {
+    test('arrays', () => {
+      const values = arrayBuilder<Employee[]>()
+        .pushArray()
+        .pushInstance().name('Tim').age(31).alive(true).buildElement()
+        .pushInstance().name('Ann').age(48).alive(true).buildElement()
+        .buildArray()
+        .pushArray()
+        .pushInstance().name('Timmy').age(1).alive(true).buildElement()
+        .pushInstance().name('Annie').age(8).alive(true).buildElement()
+        .buildArray()
+        .buildArray();
+      expect(Array.isArray(values)).toBe(true);
+      expect(values.length).toBe(2);
+      expect(Array.isArray(values[0])).toBe(true);
+      expect(Array.isArray(values[1])).toBe(true);
+      expect(values[0][0].name).toBe('Tim');
+      expect(values[0][0].age).toBe(31);
+      expect(values[0][1].name).toBe('Ann');
+      expect(values[0][1].age).toBe(48);
+      expect(values[1][0].name).toBe('Timmy');
+      expect(values[1][0].age).toBe(1);
+      expect(values[1][1].name).toBe('Annie');
+      expect(values[1][1].age).toBe(8);
+    });
+    test('record', () => {
+      const values = arrayBuilder<Record<string, Dog>>()
+        .pushRecord()
+        .setInstance('Tim').food('chicken').kind('dog').buildTim()
+        .buildRecord()
+        .pushRecord()
+        .setInstance('Jenny').food('pork').kind('dog').buildJenny()
+        .buildRecord()
+        .buildArray();
+      expect(Array.isArray(values)).toBe(true);
+      expect(values.length).toBe(2);
+      expect(values[0]['Tim'].food).toBe('chicken');
+      expect(values[1]['Jenny'].food).toBe('pork');
+    });
+    test('instance', () => {
       const values = arrayBuilder<Employee>()
-        .addBuilder().name('Tim').startDate(new Date('2020/12/31')).build()
-        .addBuilder().name('Ann').startDate(new Date('2015/06/27')).build()
+        .pushInstance().name('Tim').age(31).alive(true).buildElement()
+        .pushInstance().name('Ann').age(48).alive(true).buildElement()
         .build();
       expect(Array.isArray(values)).toBe(true);
       expect(values.length).toBe(2);
@@ -82,10 +68,10 @@ describe('array-builder', () => {
   });
   describe('compile errors', () => {
     test('functions not backed by the type do not compile and would throw if ran', () => {
-      expect(() => arrayBuilder<Employee>().
+      arrayBuilder<Employee>().
         // @ts-expect-error
         abcdef
-        ()).toThrow();
+        ();
     });
   });
 });

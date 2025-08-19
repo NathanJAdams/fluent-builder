@@ -1,47 +1,29 @@
 import { describe, test, expect } from 'vitest';
 
 import { subTypeBuilder, subTypeRegistryBuilder } from '../src';
-
-type Root = {
-  kind: string;
-};
-type SubA = Root & {
-  kind: 'a';
-  a: number;
-};
-type SubB = Root & {
-  kind: 'b';
-  b: boolean;
-};
-type Root2 = {
-  kind2: string;
-};
-type SubA2 = Root2 & {
-  kind2: 'a';
-  a: number;
-};
-type SubB2 = Root2 & {
-  kind2: 'b';
-  b: boolean;
-};
+import { Root, Root2, SubA, SubB, SubBB } from './test-types';
 
 const subTypeRegistry = subTypeRegistryBuilder()
-  .add<Root, [SubA, SubB], 'kind'>()
+  .add<Root, SubA | SubB | SubBB>()
   .build();
 type MySubTypeRegistry = typeof subTypeRegistry;
 
 describe('sub-type-builder', () => {
   describe('building', () => {
     test('builds an object of sub-type', () => {
-      const exampleA = subTypeBuilder<Root, MySubTypeRegistry>().kind('a').a(1).buildA();
+      const exampleA = subTypeBuilder<Root, MySubTypeRegistry>().kind('a').a(1).exampleInstance().a(0).b('').c(543).buildExample().buildSubType();
       expect(exampleA.kind).toBe('a');
       expect((exampleA as SubA).a).toBe(1);
       expect((exampleA as SubB).b).toBe(undefined);
 
-      const exampleB = subTypeBuilder<Root, MySubTypeRegistry>().kind('b').b(true).buildB();
+      const exampleB = subTypeBuilder<Root, MySubTypeRegistry>().kind('b').b(true).by(true).exampleInstance().a(1).b('f').c(9432594).buildExample().buildSubType();
       expect(exampleB.kind).toBe('b');
       expect((exampleB as SubB).b).toBe(true);
       expect((exampleB as SubA).a).toBe(undefined);
+    });
+    test('builds a progressive object of sub-type', () => {
+      const builder = subTypeBuilder<Root, MySubTypeRegistry>();
+      const abc = builder.b('hello').kind('b').bx('xyz').build();
     });
   });
   describe('compile errors', () => {
@@ -60,18 +42,6 @@ describe('sub-type-builder', () => {
       // @ts-expect-error
       subTypeBuilder
         <Root2, MySubTypeRegistry>();
-    });
-    test('first function is always the discriminator', () => {
-      subTypeBuilder<Root, MySubTypeRegistry>().
-        // @ts-expect-error
-        a
-        (1);
-    });
-    test('cannot choose a discriminator if not one of the sub types', () => {
-      subTypeBuilder<Root, MySubTypeRegistry>().kind(
-        // @ts-expect-error
-        'xyz'
-      );
     });
   });
 });

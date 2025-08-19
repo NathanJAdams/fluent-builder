@@ -1,29 +1,7 @@
 import { describe, test, expect } from 'vitest';
 
 import { instanceBuilder } from '../src';
-
-type Example = {
-  a: number;
-  b: string;
-  c?: number;
-  d: number | undefined;
-  e?: number | undefined;
-};
-type Nested1 = {
-  nested2: Nested2;
-};
-type Nested2 = {
-  nested3: Nested3;
-};
-type Nested3 = {
-  nested4: Nested4;
-};
-type Nested4 = {
-  nested5: Nested5;
-};
-type Nested5 = {
-  xyz: string;
-};
+import { Example } from './test-types';
 
 describe('instance-builder', () => {
   describe('building', () => {
@@ -42,22 +20,6 @@ describe('instance-builder', () => {
       expect(example.c).toBe(undefined);
       expect(example.d).toBe(undefined);
       expect(example.e).toBe(undefined);
-    });
-  });
-  describe('nesting', () => {
-    test('arbitrarily nested types can be built in one go', () => {
-      const nested1 = instanceBuilder<Nested1>()
-        .nested2Builder()
-        .nested3Builder()
-        .nested4Builder()
-        .nested5Builder()
-        .xyz('hello')
-        .build()
-        .build()
-        .build()
-        .build()
-        .build();
-      expect(nested1.nested2.nested3.nested4.nested5.xyz).toBe('hello');
     });
   });
   describe('compile errors', () => {

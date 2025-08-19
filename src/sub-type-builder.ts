@@ -1,22 +1,151 @@
-import { InstanceBuilder, instanceBuilderInternal } from './instance-builder';
-import { FindExactSubTypeMetadata, SubTypeMetadata } from './utility-types';
+import { ArrayBuilder } from './array-builder';
+import { InstanceBuilder } from './instance-builder';
+import { RecordBuilder } from './record-builder';
+import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX } from './suffixes';
+import { ArrayElementType, AsNonBaseUserType, Builder, FilterByPartial, AsSubTypeMetadata, HasOnlyIndexSignature, Keys, RecordValueType, SubTypeMetadata, Values, AsRequiredKeys } from './utility-types';
 
-export type SubTypeChooser<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TBase extends Record<string, any>, TSubTypes extends TBase[], TDiscriminator extends keyof TBase & string, TFinal, TBuildSuffix extends string | undefined = undefined> = {
-  [K in TDiscriminator]: <V extends TSubTypes[number][TDiscriminator]>(value: V) => InstanceBuilder<TSubTypeRegistry, Omit<Extract<TSubTypes[number], { [P in K]: V }>, TDiscriminator>, {}, TFinal, TBuildSuffix extends string ? TBuildSuffix : V>;
-};
+type SubTypeBuilderValue<
+  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TBase,
+  TSubUnion extends TBase,
+  TPartial extends Partial<Record<keyof TSubUnion, any>>,
+  TFinal,
+  TBuildSuffix extends string
+> = {
+    [K in string & Exclude<Keys<FilterByPartial<TSubUnion, TPartial>>, keyof TPartial>]:
+    <V extends Values<FilterByPartial<TSubUnion, TPartial>, K>>(value: V) =>
+      PartialSubTypeBuilder<
+        TSubTypeRegistry,
+        TBase,
+        TSubUnion,
+        TPartial & { [P in K]: V },
+        TFinal,
+        TBuildSuffix
+      >;
+  };
 
-export type SubTypeBuilder<TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TBase extends Record<string, any>, TFinal, TBuildSuffix extends string | undefined = undefined> =
-  SubTypeChooser<
-    TSubTypeRegistry,
-    TBase,
-    FindExactSubTypeMetadata<TSubTypeRegistry, TBase> extends SubTypeMetadata<any, infer TSubTypes, any> ? TSubTypes : never,
-    FindExactSubTypeMetadata<TSubTypeRegistry, TBase> extends SubTypeMetadata<any, any, infer TDiscriminator> ? TDiscriminator : never,
-    TFinal,
-    TBuildSuffix
-  >;
+type SubTypeBuilderArray<
+  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TBase,
+  TSubUnion extends TBase,
+  TPartial extends Partial<Record<keyof TSubUnion, any>>,
+  TFinal,
+  TBuildSuffix extends string
+> = {
+    [K in string & Exclude<Keys<FilterByPartial<TSubUnion, TPartial>>, keyof TPartial> as ArrayElementType<TSubUnion[K]> extends never ? never : `${K}${typeof ARRAY_SUFFIX}`]:
+    <V extends ArrayElementType<Values<FilterByPartial<TSubUnion, TPartial>, K>>>(value: V) =>
+      () => ArrayBuilder<
+        TSubTypeRegistry,
+        V,
+        PartialSubTypeBuilder<
+          TSubTypeRegistry,
+          TBase,
+          TSubUnion,
+          TPartial & { [P in K]: V },
+          TFinal,
+          TBuildSuffix>,
+        K
+      >;
+  };
 
-export const subTypeBuilderInternal = <TSubTypeRegistry extends readonly SubTypeMetadata<any, any, any>[], TBase extends Record<string, any>, TFinal>(
-  finalizer: (built: TBase) => TFinal = (built) => built as unknown as TFinal
-): SubTypeBuilder<TSubTypeRegistry, TBase, TFinal> => {
-  return instanceBuilderInternal(finalizer) as SubTypeBuilder<TSubTypeRegistry, TBase, TFinal>;
-};
+type SubTypeBuilderRecord<
+  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TBase,
+  TSubUnion extends TBase,
+  TPartial extends Partial<Record<keyof TSubUnion, any>>,
+  TFinal,
+  TBuildSuffix extends string
+> = {
+    [K in string & Exclude<Keys<FilterByPartial<TSubUnion, TPartial>>, keyof TPartial> as HasOnlyIndexSignature<TSubUnion[K]> extends true ? `${K}${typeof RECORD_SUFFIX}` : never]:
+    <V extends Values<FilterByPartial<TSubUnion, TPartial>, K>>() =>
+      () => RecordBuilder<
+        TSubTypeRegistry,
+        RecordValueType<V>,
+        PartialSubTypeBuilder<
+          TSubTypeRegistry,
+          TBase,
+          TSubUnion,
+          TPartial & { [P in K]: V },
+          TFinal,
+          TBuildSuffix
+        >,
+        K
+      >
+  };
+
+type SubTypeBuilderSubType<
+  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TBase,
+  TSubUnion extends TBase,
+  TPartial extends Partial<Record<keyof TSubUnion, any>>,
+  TFinal,
+  TBuildSuffix extends string
+> = {
+    [K in string & Exclude<Keys<FilterByPartial<TSubUnion, TPartial>>, keyof TPartial> as AsSubTypeMetadata<TSubTypeRegistry, TSubUnion[K]> extends never ? never : `${K}${typeof SUB_TYPE_SUFFIX}`]:
+    <V extends Values<FilterByPartial<TSubUnion, TPartial>, K>>() =>
+      AsSubTypeMetadata<TSubTypeRegistry, TSubUnion[K]> extends SubTypeMetadata<infer TBaseNested, infer TSubUnionNested>
+      ? () => SubTypeBuilder<
+        TSubTypeRegistry,
+        TBaseNested,
+        TSubUnionNested,
+        PartialSubTypeBuilder<
+          TSubTypeRegistry,
+          TBase,
+          TSubUnion,
+          TPartial & { [P in K]: V },
+          TFinal,
+          TBuildSuffix
+        >,
+        K
+      >
+      : never;
+  };
+
+type SubTypeBuilderInstance<
+  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TBase,
+  TSubUnion extends TBase,
+  TPartial extends Partial<Record<keyof TSubUnion, any>>,
+  TFinal,
+  TBuildSuffix extends string
+> = {
+    [K in string & Exclude<Keys<FilterByPartial<TSubUnion, TPartial>>, keyof TPartial> as AsNonBaseUserType<TSubTypeRegistry, TSubUnion[K]> extends never ? never : `${K}${typeof INSTANCE_SUFFIX}`]:
+    <V extends Values<FilterByPartial<Required<TSubUnion>, TPartial>, K>>() =>
+      InstanceBuilder<
+        TSubTypeRegistry,
+        V,
+        PartialSubTypeBuilder<
+          TSubTypeRegistry,
+          TBase,
+          TSubUnion,
+          TPartial & { [P in K]: V },
+          TFinal,
+          TBuildSuffix
+        >,
+        K
+      >
+  };
+
+export type PartialSubTypeBuilder<
+  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TBase,
+  TSubUnion extends TBase,
+  TPartial extends Partial<Record<keyof TSubUnion, any>>,
+  TFinal,
+  TBuildSuffix extends string
+> =
+  & (AsRequiredKeys<TBase, TPartial> extends never ? Builder<TFinal, TBuildSuffix> : object)
+  & SubTypeBuilderValue<TSubTypeRegistry, TBase, TSubUnion, TPartial, TFinal, TBuildSuffix>
+  & SubTypeBuilderArray<TSubTypeRegistry, TBase, TSubUnion, TPartial, TFinal, TBuildSuffix>
+  & SubTypeBuilderRecord<TSubTypeRegistry, TBase, TSubUnion, TPartial, TFinal, TBuildSuffix>
+  & SubTypeBuilderSubType<TSubTypeRegistry, TBase, TSubUnion, TPartial, TFinal, TBuildSuffix>
+  & SubTypeBuilderInstance<TSubTypeRegistry, TBase, TSubUnion, TPartial, TFinal, TBuildSuffix>
+  ;
+
+export type SubTypeBuilder<
+  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TBase,
+  TSubUnion extends TBase,
+  TFinal,
+  TBuildSuffix extends string
+> = PartialSubTypeBuilder<TSubTypeRegistry, TBase, TSubUnion, {}, TFinal, TBuildSuffix>;
