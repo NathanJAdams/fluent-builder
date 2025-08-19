@@ -41,7 +41,7 @@ export const createBuilder = <TValue, TSchema, TFinal>(
         });
       } else {
         return () => createBuilder(nestedReducer, instance => {
-          reducer.accumulate(property, instance as TValue, undefined);
+          reducer.accumulate(property, instance as TValue);
           return proxy;
         });
       }
