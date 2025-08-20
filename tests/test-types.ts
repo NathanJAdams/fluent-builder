@@ -1,4 +1,5 @@
 export type House = {
+  a?: boolean;
   rooms: Room[];
 };
 export type Room = {
@@ -100,4 +101,37 @@ export type SubA2 = Root2 & {
 export type SubB2 = Root2 & {
   kind2: 'b';
   b: boolean;
+};
+
+export type Root3 = {
+  kind3: string;
+};
+export type SubA3 = Root3 & {
+  kind3: 'a';
+  a: number;
+};
+export type SubB3 = Root3 & {
+  kind3: 'b';
+  b: boolean;
+};
+
+export type DuplicateRootStructure = {
+  kind: string;
+};
+export type DuplicateSubA = DuplicateRootStructure & {
+  kind: 'duplicateA';
+};
+export type DuplicateSubB = DuplicateRootStructure & {
+  kind: 'duplicateB';
+};
+
+export type AlteredRootStructure = {
+  kind: string;
+  extra: number;
+};
+export type AlteredSubA = AlteredRootStructure & {
+  kind: 'duplicateA';
+};
+export type AlteredSubB = AlteredRootStructure & {
+  kind: 'duplicateB';
 };

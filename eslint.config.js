@@ -33,6 +33,12 @@ export default [
         },
         warnOnUnassignedImports: true,
       }],
+      'sort-imports': ['error', {
+        ignoreCase: false,
+        ignoreDeclarationSort: true,
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single']
+      }],
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {

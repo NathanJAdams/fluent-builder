@@ -1,47 +1,95 @@
 import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX } from './suffixes';
 
-type ValueReducer<TValue, TReduced> = {
-  accumulate: (property: string, value: TValue, name?: string) => void;
-  reduce: () => TReduced;
-};
+type AccumulatedType = 'instance' | 'array' | 'record';
 
-export const createBuilder = <TValue, TSchema, TFinal>(
-  reducer: ValueReducer<TValue, TSchema>,
-  finalizer: (built: TSchema) => TFinal = (built) => built as unknown as TFinal,
-): any => {
+export const createBuilder = () => _createBuilder();
+
+const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: any, finalizer: (built: any) => any = (built) => built): any => {
   const handler: ProxyHandler<any> = {
     get(_, property: string) {
       if (property.startsWith('build')) {
-        return () => finalizer(reducer.reduce());
+        return () => {
+          if (accumulatedValues === undefined) {
+            throw Error('Cannot build something from nothing.');
+          }
+          return finalizer(accumulatedValues);
+        };
       }
-      const nestedReducer = property.endsWith(ARRAY_SUFFIX)
-        ? reducers.ofArray()
+      if (accumulatedType === undefined) {
+        if (property.startsWith('push')) {
+          accumulatedType = 'array';
+          accumulatedValues = [];
+        } else if (property.startsWith('set')) {
+          accumulatedType = 'record';
+          accumulatedValues = {};
+        } else {
+          accumulatedType = 'instance';
+          accumulatedValues = {};
+        }
+      } else {
+        if (property.startsWith('push')) {
+          if (accumulatedType !== 'array') {
+            throw Error(`Cannot call a push() function on ${accumulatedType} type`);
+          }
+        } else if (property.startsWith('set')) {
+          if (accumulatedType !== 'record') {
+            throw Error(`Cannot call a set() function on ${accumulatedType} type`);
+          }
+        } else if (accumulatedType !== 'instance') {
+          throw Error(`Cannot call a value function on ${accumulatedType} type`);
+        }
+      }
+      const nestedAccumulatedType: AccumulatedType | undefined = property.endsWith(ARRAY_SUFFIX)
+        ? 'array'
         : property.endsWith(RECORD_SUFFIX)
-          ? reducers.ofRecord()
+          ? 'record'
           : (property.endsWith(INSTANCE_SUFFIX) || property.endsWith(SUB_TYPE_SUFFIX))
-            ? reducers.ofInstance()
+            ? 'instance'
             : undefined;
-      if (nestedReducer === undefined) {
+      const nestedAccumulatedValues = (nestedAccumulatedType === undefined)
+        ? undefined
+        : (nestedAccumulatedType === 'array')
+          ? []
+          : {};
+      if (nestedAccumulatedType === undefined) {
         if (property === 'set') {
-          return (name: string, value: TValue) => {
-            reducer.accumulate(property, value, name);
+          return (name: string, value: any) => {
+            const record = accumulatedValues as Record<string, any>;
+            record[name] = value;
+            return proxy;
+          };
+        } else if (property === 'push') {
+          return (value: any) => {
+            const array = accumulatedValues as any[];
+            array.push(value);
             return proxy;
           };
         } else {
-          return (value: TValue) => {
-            reducer.accumulate(property, value);
+          return (value: any) => {
+            const instance = accumulatedValues as Record<string, any>;
+            const key = toKey(property);
+            instance[key] = value;
             return proxy;
           };
         }
       }
       if (property.startsWith('set')) {
-        return (name: string) => createBuilder(nestedReducer, instance => {
-          reducer.accumulate(property, instance as TValue, name);
+        return (name: string) => _createBuilder(nestedAccumulatedType, nestedAccumulatedValues, value => {
+          const record = accumulatedValues as Record<string, any>;
+          record[name] = value;
+          return proxy;
+        });
+      } else if (property.startsWith('push')) {
+        return () => _createBuilder(nestedAccumulatedType, nestedAccumulatedValues, value => {
+          const array = accumulatedValues as any[];
+          array.push(value);
           return proxy;
         });
       } else {
-        return () => createBuilder(nestedReducer, instance => {
-          reducer.accumulate(property, instance as TValue);
+        return () => _createBuilder(nestedAccumulatedType, nestedAccumulatedValues, value => {
+          const instance = accumulatedValues as Record<string, any>;
+          const key = toKey(property);
+          instance[key] = value;
           return proxy;
         });
       }
@@ -51,47 +99,6 @@ export const createBuilder = <TValue, TSchema, TFinal>(
   return proxy;
 };
 
-export const reducers = {
-  ofInstance: <TSchema extends Record<string, any>>(): ValueReducer<TSchema[string], TSchema> => {
-    const values: Partial<TSchema> = {};
-    return {
-      accumulate(property, value) {
-        const key = toKey(property);
-        values[key as keyof TSchema] = value;
-      },
-      reduce() {
-        return values as TSchema;
-      },
-    };
-  },
-  ofRecord: <TValue>(): ValueReducer<TValue, Record<string, TValue>> => {
-    const values: Record<string, TValue> = {};
-    return {
-      accumulate(property, value, name) {
-        if (name === undefined) {
-          throw Error('Name for record entry is undefined');
-        }
-        values[name] = value;
-      },
-      reduce() {
-        return values as Record<string, TValue>;
-      },
-    };
-  },
-  ofArray: <TElement>(): ValueReducer<TElement, TElement[]> => {
-    const values: TElement[] = [];
-    return {
-      accumulate(property, value) {
-        values.push(value);
-      },
-      reduce() {
-        return values;
-      },
-    };
-  },
-};
-
-const stripSuffix = (property: string, suffix: string): string => property.substring(0, property.length - suffix.length);
 const toKey = (property: string): string => {
   if (property.endsWith(ARRAY_SUFFIX)) {
     return stripSuffix(property, ARRAY_SUFFIX);
@@ -107,3 +114,5 @@ const toKey = (property: string): string => {
   }
   return property;
 };
+
+const stripSuffix = (property: string, suffix: string): string => property.substring(0, property.length - suffix.length);

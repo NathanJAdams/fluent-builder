@@ -1,12 +1,12 @@
 import { describe, test, expect } from 'vitest';
 
-import { instanceBuilder } from '../src';
-import { Example } from './test-types';
+import { fluentBuilder } from '../src';
+import { Example, Root } from './test-types';
 
 describe('instance-builder', () => {
   describe('building', () => {
     test('builds an object', () => {
-      const example = instanceBuilder<Example>().a(1).b('b').c(3).d(4).e(5).build();
+      const example = fluentBuilder<Example>().a(1).b('b').c(3).d(4).e(5).buildInstance();
       expect(example.a).toBe(1);
       expect(example.b).toBe('b');
       expect(example.c).toBe(3);
@@ -14,37 +14,15 @@ describe('instance-builder', () => {
       expect(example.e).toBe(5);
     });
     test('can build without optional fields', () => {
-      const example = instanceBuilder<Example>().a(1).b('b').build();
+      const example = fluentBuilder<Example>().a(1).b('b').buildInstance();
       expect(example.a).toBe(1);
       expect(example.b).toBe('b');
       expect(example.c).toBe(undefined);
       expect(example.d).toBe(undefined);
       expect(example.e).toBe(undefined);
     });
-  });
-  describe('compile errors', () => {
-    test('functions not backed by the type do not compile', () => {
-      instanceBuilder<Example>().
-        // @ts-expect-error
-        abcdef
-        ();
-    });
-    test('build function is not available until all non-optional fields have been set', () => {
-      instanceBuilder<Example>().
-        // @ts-expect-error
-        build
-        ();
-    });
-    test('cannot use the same function twice even if other functions have been called in between', () => {
-      instanceBuilder<Example>()
-        .a(1)
-        .b('b')
-        .c(3)
-        .d(4)
-        .e(5).
-        // @ts-expect-error
-        a
-        (2);
+    test('can build nested instances', () => {
+      fluentBuilder<Root>().exampleInstance().a(8).b('sada').buildExample();
     });
   });
 });

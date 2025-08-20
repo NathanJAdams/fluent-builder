@@ -2,7 +2,7 @@ import { ArrayBuilder } from './array-builder';
 import { RecordBuilder } from './record-builder';
 import { SubTypeBuilder } from './sub-type-builder';
 import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX } from './suffixes';
-import { ArrayElementType, AsNonBaseUserType, Builder, AsSubTypeMetadata, HasOnlyIndexSignature, SubTypeMetadata, UnusedKeys, AsRequiredKeys, RecordValueType } from './utility-types';
+import { ArrayElementType, AsRequiredKeys, AsSubTypeMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, RecordValueType, SubTypeMetadata, UnusedKeys } from './utility-types';
 
 type InstanceBuilderValue<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial>]:
@@ -51,8 +51,8 @@ type InstanceBuilderRecord<TSubTypeRegistry extends readonly SubTypeMetadata<any
 };
 
 type InstanceBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
-  [K in UnusedKeys<TSchema, TPartial> as AsSubTypeMetadata<TSubTypeRegistry, TSchema[K]> extends never ? never : `${K}${typeof SUB_TYPE_SUFFIX}`]:
-  AsSubTypeMetadata<TSubTypeRegistry, TSchema[K]> extends SubTypeMetadata<infer TBase, infer TSubUnion>
+  [K in UnusedKeys<TSchema, TPartial> as AsSubTypeMetadata<TSubTypeRegistry, Required<TSchema>[K]> extends never ? never : `${K}${typeof SUB_TYPE_SUFFIX}`]:
+  AsSubTypeMetadata<TSubTypeRegistry, Required<TSchema>[K]> extends SubTypeMetadata<infer TBase, infer TSubUnion>
   ? () =>
     SubTypeBuilder<
       TSubTypeRegistry,
@@ -71,11 +71,11 @@ type InstanceBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<an
 };
 
 type InstanceBuilderInstance<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
-  [K in UnusedKeys<TSchema, TPartial> as AsNonBaseUserType<TSubTypeRegistry, TSchema[K]> extends never ? never : `${K}${typeof INSTANCE_SUFFIX}`]:
+  [K in UnusedKeys<TSchema, TPartial> as IsNonBaseUserType<TSubTypeRegistry, Required<TSchema>[K]>  extends true ? `${K}${typeof INSTANCE_SUFFIX}` : never]:
   () =>
     InstanceBuilder<
       TSubTypeRegistry,
-      TSchema[K],
+      Required<TSchema>[K],
       PartialInstanceBuilder<
         TSubTypeRegistry,
         TSchema,

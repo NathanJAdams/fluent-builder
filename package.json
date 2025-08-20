@@ -1,7 +1,7 @@
 {
   "name": "ts-fluent-builder",
   "description": "A TypeScript library for building types - 100% fluent, arbitrarily nested, zero/de minimis config with compile-time type & data safety mechanisms.",
-  "version": "1.0.10",
+  "version": "1.1.0",
   "author": {
     "name": "Nathan Adams",
     "url": "https://github.com/NathanJAdams"
@@ -13,10 +13,13 @@
     "url": "https://github.com/NathanJAdams/fluent-builder.git"
   },
   "keywords": [
-    "fluent",
-    "object",
-    "type",
-    "builder"
+    "typescript",
+    "fluent builder",
+    "fluent api",
+    "type builder",
+    "builder pattern",
+    "nested builder",
+    "typescript library"
   ],
   "files": [
     "dist/",
@@ -32,13 +35,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
+  "sideEffects": false,
   "scripts": {
     "build": "tsup",
     "clean": "rimraf ./dist/",
     "lint": "eslint ./src --fix",
-    "test": "vitest --run --reporter verbose"
+    "test": "vitest --run --coverage",
+    "test:coverage": "vitest --run --coverage"
   },
   "devDependencies": {
     "@types/node": "^22",

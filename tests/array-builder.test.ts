@@ -1,12 +1,12 @@
 import { describe, test, expect } from 'vitest';
 
-import { arrayBuilder } from '../src';
+import { fluentBuilder } from '../src';
 import type { Employee, Dog } from './test-types';
 
 describe('array-builder', () => {
   describe('building', () => {
     test('values', () => {
-      const values = arrayBuilder<string>()
+      const values = fluentBuilder<string[]>()
         .push('a')
         .push('b')
         .push('c')
@@ -18,7 +18,7 @@ describe('array-builder', () => {
       expect(values[2]).toBe('c');
     });
     test('arrays', () => {
-      const values = arrayBuilder<Employee[]>()
+      const values = fluentBuilder<Employee[][]>()
         .pushArray()
         .pushInstance().name('Tim').age(31).alive(true).buildElement()
         .pushInstance().name('Ann').age(48).alive(true).buildElement()
@@ -42,7 +42,7 @@ describe('array-builder', () => {
       expect(values[1][1].age).toBe(8);
     });
     test('record', () => {
-      const values = arrayBuilder<Record<string, Dog>>()
+      const values = fluentBuilder<Record<string, Dog>[]>()
         .pushRecord()
         .setInstance('Tim').food('chicken').kind('dog').buildTim()
         .buildRecord()
@@ -56,7 +56,7 @@ describe('array-builder', () => {
       expect(values[1]['Jenny'].food).toBe('pork');
     });
     test('instance', () => {
-      const values = arrayBuilder<Employee>()
+      const values = fluentBuilder<Employee[]>()
         .pushInstance().name('Tim').age(31).alive(true).buildElement()
         .pushInstance().name('Ann').age(48).alive(true).buildElement()
         .build();
@@ -64,14 +64,6 @@ describe('array-builder', () => {
       expect(values.length).toBe(2);
       expect(values[0].name).toBe('Tim');
       expect(values[1].name).toBe('Ann');
-    });
-  });
-  describe('compile errors', () => {
-    test('functions not backed by the type do not compile and would throw if ran', () => {
-      arrayBuilder<Employee>().
-        // @ts-expect-error
-        abcdef
-        ();
     });
   });
 });

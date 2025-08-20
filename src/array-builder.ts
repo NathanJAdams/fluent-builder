@@ -1,7 +1,7 @@
 import { InstanceBuilder } from './instance-builder';
 import { RecordBuilder } from './record-builder';
 import { SubTypeBuilder } from './sub-type-builder';
-import { ArrayElementType, AsNonBaseUserType, Builder, AsSubTypeMetadata, HasOnlyIndexSignature, RecordValueType, SubTypeMetadata } from './utility-types';
+import { ArrayElementType, AsSubTypeMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, RecordValueType, SubTypeMetadata } from './utility-types';
 
 type ArrayBuilderValue<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> = {
   push: (value: TElement) => ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>;
@@ -34,7 +34,10 @@ type ArrayBuilderRecord<TSubTypeRegistry extends readonly SubTypeMetadata<any, a
   : object;
 
 type ArrayBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
-  AsSubTypeMetadata<TSubTypeRegistry, TElement> extends SubTypeMetadata<infer TBase, infer TSubUnion>
+  AsSubTypeMetadata<TSubTypeRegistry, TElement> extends infer TMetadata
+  ? [TMetadata] extends [never]
+  ? object
+  : TMetadata extends SubTypeMetadata<infer TBase, infer TSubUnion>
   ? {
     pushSubType: () =>
       SubTypeBuilder<
@@ -45,12 +48,12 @@ type ArrayBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<any, 
         'Element'
       >;
   }
+  : object
   : object;
 
 type ArrayBuilderInstance<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
-  AsNonBaseUserType<TSubTypeRegistry, TElement> extends never
-  ? object
-  : {
+  IsNonBaseUserType<TSubTypeRegistry, TElement> extends true
+  ? {
     pushInstance: () =>
       InstanceBuilder<
         TSubTypeRegistry,
@@ -58,7 +61,8 @@ type ArrayBuilderInstance<TSubTypeRegistry extends readonly SubTypeMetadata<any,
         ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>,
         'Element'
       >;
-  };
+  }
+  : object;
 
 export type ArrayBuilder<
   TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],

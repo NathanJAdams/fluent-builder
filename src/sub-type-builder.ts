@@ -2,7 +2,7 @@ import { ArrayBuilder } from './array-builder';
 import { InstanceBuilder } from './instance-builder';
 import { RecordBuilder } from './record-builder';
 import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX } from './suffixes';
-import { ArrayElementType, AsNonBaseUserType, Builder, FilterByPartial, AsSubTypeMetadata, HasOnlyIndexSignature, Keys, RecordValueType, SubTypeMetadata, Values, AsRequiredKeys } from './utility-types';
+import { ArrayElementType, AsRequiredKeys, AsSubTypeMetadata, Builder, FilterByPartial, HasOnlyIndexSignature, IsNonBaseUserType, Keys, RecordValueType, SubTypeMetadata, Values } from './utility-types';
 
 type SubTypeBuilderValue<
   TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
@@ -109,7 +109,7 @@ type SubTypeBuilderInstance<
   TFinal,
   TBuildSuffix extends string
 > = {
-    [K in string & Exclude<Keys<FilterByPartial<TSubUnion, TPartial>>, keyof TPartial> as AsNonBaseUserType<TSubTypeRegistry, TSubUnion[K]> extends never ? never : `${K}${typeof INSTANCE_SUFFIX}`]:
+    [K in string & Exclude<Keys<FilterByPartial<TSubUnion, TPartial>>, keyof TPartial> as IsNonBaseUserType<TSubTypeRegistry, Required<TSubUnion>[K]> extends true ? `${K}${typeof INSTANCE_SUFFIX}` : never]:
     <V extends Values<FilterByPartial<Required<TSubUnion>, TPartial>, K>>() =>
       InstanceBuilder<
         TSubTypeRegistry,
@@ -134,7 +134,7 @@ export type PartialSubTypeBuilder<
   TFinal,
   TBuildSuffix extends string
 > =
-  & (AsRequiredKeys<TBase, TPartial> extends never ? Builder<TFinal, TBuildSuffix> : object)
+  & (AsRequiredKeys<Required<TSubUnion>, TPartial> extends never ? Builder<TFinal, TBuildSuffix> : object)
   & SubTypeBuilderValue<TSubTypeRegistry, TBase, TSubUnion, TPartial, TFinal, TBuildSuffix>
   & SubTypeBuilderArray<TSubTypeRegistry, TBase, TSubUnion, TPartial, TFinal, TBuildSuffix>
   & SubTypeBuilderRecord<TSubTypeRegistry, TBase, TSubUnion, TPartial, TFinal, TBuildSuffix>
