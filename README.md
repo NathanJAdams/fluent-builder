@@ -381,6 +381,8 @@ const duplicateKey = fluentBuilder<Record<string, Config>>()
 
 4. **Use a Union Registry**: For polymorphic types, create a union registry to get proper type support
 
+5. **Use the build...() Aliases**: Help later developers easily see where they're looking in the build chain
+
 ## Contributing
 
 We welcome contributions! Please open an issue or submit a pull request on [GitHub Issues](https://github.com/NathanJAdams/ts-fluent-builder/issues).
