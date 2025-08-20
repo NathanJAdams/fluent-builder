@@ -61,8 +61,8 @@ export type HasOnlyIndexSignature<T> =
   : false
   : false;
 
-export type IsNonBaseUserType<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], T> =
-  AsSubTypeMetadata<TSubTypeRegistry, T> extends never
+export type IsNonBaseUserType<TUnionRegistry extends readonly UnionMetadata<any, any>[], T> =
+  AsUnionMetadata<TUnionRegistry, T> extends never
   ? T extends object
   ? keyof T extends never
   ? false
@@ -84,24 +84,24 @@ export type RequiredKeys<T> = {
 
 export type AsRequiredKeys<TSchema, TPartial extends Partial<TSchema>> = Exclude<RequiredKeys<TSchema>, keyof TPartial>;
 
-export type SubTypeMetadata<
+export type UnionMetadata<
   TBase extends Record<string, any>,
-  TSubUnion extends TBase
+  TUnion extends TBase
 > = {
   __base: TBase;
-  __subunion: TSubUnion;
+  __union: TUnion;
 };
 
-export type AsSubTypeMetadata<
-  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+export type AsUnionMetadata<
+  TUnionRegistry extends readonly UnionMetadata<any, any>[],
   TType
 > =
-  TSubTypeRegistry extends readonly [infer Head, ...infer Tail]
-  ? Head extends SubTypeMetadata<infer TBase, infer TSubUnion>
+  TUnionRegistry extends readonly [infer Head, ...infer Tail]
+  ? Head extends UnionMetadata<infer TBase, infer TUnion>
   ? IsExact<TType, TBase> extends true
-  ? SubTypeMetadata<TBase, TSubUnion>
-  : Tail extends readonly SubTypeMetadata<any, any>[]
-  ? AsSubTypeMetadata<Tail, TType>
+  ? UnionMetadata<TBase, TUnion>
+  : Tail extends readonly UnionMetadata<any, any>[]
+  ? AsUnionMetadata<Tail, TType>
   : never
   : never
   : never;

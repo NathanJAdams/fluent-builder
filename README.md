@@ -1,265 +1,394 @@
 # ts-fluent-builder
-A TypeScript library for building types - 100% fluent, arbitrarily nested, zero/de minimis config with compile time type & data safety mechanisms.
 
+A powerful TypeScript library for building any complex type, 100% fluent, arbitrarily nested, zero/de minimis config, with full IntelliSense support and compile-time type & data safety mechanisms.
 
-## Contents
+## Features
 
-[Install](#Install)
+- **Type-Safe**: Full TypeScript support with compile-time validation
+- **Data-Safe**: Prevents overwriting data or building incomplete objects
+- **Fluent API**: Intuitive method chaining for object construction
+- **IntelliSense**: Rich autocomplete and type hints in your IDE
+- **Build Any Complex Type**: Support for user-defined types & interfaces, arrays, records, unions
+- **Union Registry**: Advanced support for polymorphic object construction
+- **Flexible**: Works with any valid TypeScript type structure
 
-[Usage](#Usage)
+## Installation
 
-[Safety](#Safety)
-
-[Nesting](#Nesting)
-
-
-## Install
-
-Install via one of the commands
-
-```sh
-npm -i ts-fluent-builder
+```bash
+npm install ts-fluent-builder
+# or
 yarn add ts-fluent-builder
 ```
 
-
-## Usage
-
-There are 4 types of object which `ts-fluent-builder` can build:
-
-- A user defined type
-- An array
-- A record
-- A sub type of a user defined base type
-
-#### User defined type
+## Quick Start
 
 ```typescript
-import { instanceBuilder } from 'ts-fluent-builder';
+import { fluentBuilder } from 'ts-fluent-builder';
 
-type Car = {
-  color: string;
-  doors: number;
-};
-
-const car = instanceBuilder<Car>()
-  .color('red')
-  .doors(4)
-  .build();
-```
-
-#### Array
-
-Array elements can be built by value or by a nested builder or a mix of both.
-
-```typescript
-import { arrayBuilder } from 'ts-fluent-builder';
-
-type Employee = {
+// Define your types
+interface User {
+  id: number;
   name: string;
-  department: string;
-};
+  email: string;
+  addresses: Address[];
+}
 
-const employees = arrayBuilder<Employee>()
-  .add({ name: 'Laura', department: 'Accounts' })
-  .addBuilder().name('John').department('Sales').build()
+interface Address {
+  street: string;
+  city: string;
+  country: string;
+}
+
+// Build objects fluently
+const user = fluentBuilder<User>()
+  .id(1)
+  .name('John Doe')
+  .email('john@example.com')
+  .addressesArray()
+    .pushInstance()
+      .street('123 Main St')
+      .city('New York')
+      .country('USA')
+      .build()
+    .push({
+      street: '456 Oak Ave',
+      city: 'Boston',
+      country: 'USA'
+    })
+    .buildAddresses()
   .build();
 ```
 
-#### Record
+## Core Concepts
 
-Record entries can also be built by value or by a nested builder or a mix of both. They also require a name for each entry.
+### Instance Builder
+
+Build complex objects with nested properties:
 
 ```typescript
-import { recordBuilder } from 'ts-fluent-builder';
-
-type Child = {
+interface Person {
+  name: string;
   age: number;
-  hairColor: string;
-};
+  address: Address;
+}
 
-const children = recordBuilder<Child>()
-  .add('Timmy', { age: 2, hairColor: 'brown' })
-  .addBuilder('Alice').age(4).hairColor('red').buildAlice()
-  .build();
-
-// A top level record will also have named fields for each entry
-const timmyAge = children.Timmy.age;
-const aliceHairColor = children.Alice.hairColor;
-```
-
-#### SubType of user defined base type
-
-Sometimes a type is a base type which shouldn't be built directly, but might still need to be used as a field type. To let ts-fluent-builder know which types are available requires a small amount of config which can itself be built via generic parameters.
-
-```typescript
-import { subTypeBuilder, subTypeRegistryBuilder } from 'ts-fluent-builder';
-
-type Vehicle = {
-  vehicleType: string;
-  color: string;
-};
-type Bike = Vehicle & {
-  vehicleType: 'bike';
-  wheelSpokes: number;
-};
-type Truck = Vehicle & {
-  vehicleType: 'truck';
-  haulageCapacity: number;
-};
-
-const subTypeRegistry = subTypeRegistryBuilder()
-  .add<Vehicle, Bike | Truck, 'vehicleType'>()
-  .build();
-type MySubTypeRegistry = typeof subTypeRegistry;
-```
-
-The 3 generic parameters are, in order:
-
-- The root/base type
-- A union of all sub types
-- The discriminator used to distinguish between sub types
-
-The `type` of the resulting sub types array will be needed for building objects as shown here
-
-```typescript
-const bike = subTypeBuilder<Vehicle, MySubTypeRegistry>()
-  .vehicleType('bike')
-  .color('blue')
-  .wheelSpokes(48)
-  .buildBike();
-```
-
-The sub type builder will first provide a discriminator function to choose which sub type to build, then provide builder functions for that specific sub type as normal.
-
-#### Build functions
-
-In addition to the normal `build()` functions, some builders also offer aliased named build functions which say what they are building, eg. `buildBike()`. These are simply aliases and do exactly the same as their normal `build()` counterparts. They are available as hints to their builder chain location in case the developer finds it useful or more readable to avoid long consecutive `.build().build()` chains.
-
-The normal `build()` function will always be provided eg. in case the function name produced contained non-alphanumeric characters and couldn't be called in the normal manner. Future releases may also offer a `buildAll()` or `buildAllPossible()` function.
-
-
-## Safety
-
-A number of compile time safety mechanisms are included to prevent runtime errors.
-
-#### Build functions are only available when all required fields are set
-
-When creating a type, fields are very often required and will cause runtime errors if undefined. Therefore to guarantee data safety at runtime, ts-fluent-builder actively prevents building until all non-optional fields are given, the build function will simply not be available. A field counts as optional if it has a question mark or if it's value type is a union with undefined.
-
-```typescript
-import { instanceBuilder } from 'ts-fluent-builder';
-
-type Car = {
-  color: string;
-  doors: number;
-  hasSunRoof: boolean | undefined;
-  isRusty?: boolean;
-};
-
-const car = instanceBuilder<Car>()
-  .color('red')
-  .doors(4)
-  .build();
-  // compiles without error as fields `hasSunRoof` and `isRusty` are both optional
-
-const unbuilt = instanceBuilder<Car>()
-  .color('yellow')
-  .build(); // <- compile time error prevents building until required `doors` field has been set
-```
-
-#### Fields cannot be overwritten
-
-The ability to overwrite data can give rise to reasonable but invalid assumptions about what data is being used. To prevent this occuring, ts-fluent-builder keeps track of fields and does not make them available after they have been set, all at compile time.
-
-```typescript
-import { instanceBuilder } from 'ts-fluent-builder';
-
-type Task = {
-  name: string;
-  hours: number;
-  ... // other fields
-  description: string;
-};
-
-const task = instanceBuilder<Task>()
-  .name('Do some work')
-  .hours(4)
-  ... // other function calls
-  .description('Long task description')
-  .hours(10) // <- compile time error prevents overwriting data
+const person = fluentBuilder<Person>()
+  .name('Alice')
+  .age(30)
+  .addressInstance()
+    .street('123 Main St')
+    .city('Springfield')
+    .country('USA')
+    .buildAddress()
   .build();
 ```
 
-#### Named record entries cannot be overwritten
+### Array Builder
 
-In a similar manner, ts-fluent-builder will prevent overwriting entries in a record if the key is a duplicate of one already added.
+Construct arrays with type-safe element addition:
 
 ```typescript
-import { recordBuilder } from 'ts-fluent-builder';
+const numbers = fluentBuilder<number[]>()
+  .push(1)
+  .push(2)
+  .push(3)
+  .build(); // [1, 2, 3]
 
-type Book = {
+// Nested array building
+interface TodoItem {
+  id: number;
   title: string;
-};
+  completed: boolean;
+}
 
-const books = recordBuilder<Book>()
-  .addBuilder('Timmy').age(1).buildTimmy()
-  .addBuilder('Sarah').age(4).buildSarah()
-  .addBuilder('Timmy') // <- compile time error prevents overwriting entry previously added
-  .age(1.5)
-  .buildTimmy();
+interface TodoList {
+  items: TodoItem[];
+}
+
+const todoList = fluentBuilder<TodoList>()
+  .itemsArray()
+    .pushInstance()
+      .id(1)
+      .title('Buy groceries')
+      .completed(false)
+      .build()
+    .pushInstance()
+      .id(2)
+      .title('Walk the dog')
+      .completed(true)
+      .build()
+    .buildItems()
+  .build();
 ```
 
+### Record Builder
 
-## Nesting
-
-Arbitrarily deep nesting is supported, only limited by the compiler. Future releases may allow configuring a limit on this.
+Build record/dictionary types with dynamic keys:
 
 ```typescript
-import { instanceBuilder, subTypeRegistryBuilder } from 'ts-fluent-builder';
+interface Config {
+  url: string;
+  timeout: number;
+  enabled: boolean;
+}
 
-type House = {
-  rooms: Room[];
-};
-type Room = {
-  furniture: RoomObject[];
-  windows: Record<string, Window>;
-};
-type RoomObject = {
-  kind: string;
-};
-type Chair = RoomObject & {
-  kind: 'chair';
-  legs: number;
-};
-type Table = RoomObject & {
-  kind: 'table';
-  width: number;
-  breadth: number;
-  height: number;
-};
-type Window = {
-  width: number;
-  height: number;
-  material: string;
-};
+const config = fluentBuilder<Record<string, Config>>()
+  .set('production', {
+    url: 'https://api.example.com',
+    timeout: 5000,
+    enabled: true
+  })
+  .setInstance('development')
+    .url('https://dev.api.example.com')
+    .timeout(10000)
+    .enabled(false)
+    .buildDevelopment()
+  .buildRecord();
+```
 
-const subTypeRegistry = subTypeRegistryBuilder()
-  .add<RoomObject, Chair | Table, 'kind'>()
+### Union Registry
+
+Handle polymorphic types and inheritance hierarchies:
+
+```typescript
+import { unionRegistryBuilder } from 'ts-fluent-builder';
+
+// Define base and derived types
+interface Shape {
+  type: string;
+  area: number;
+}
+
+interface Circle extends Shape {
+  type: 'circle';
+  radius: number;
+}
+
+interface Rectangle extends Shape {
+  type: 'rectangle';
+  width: number;
+  height: number;
+}
+
+type ShapeUnion = Circle | Rectangle;
+
+// Create union registry
+const registry = unionRegistryBuilder()
+  .register<Shape, ShapeUnion>()
   .build();
-type MySubTypeRegistry = typeof subTypeRegistry;
 
-const house = instanceBuilder<House, MySubTypeRegistry>()
-  .roomsArrayBuilder()
-  .add({ furniture: [], windows: {} })
-  .addBuilder()
-  .furnitureArrayBuilder()
-  .addSubTypeBuilder().kind('table').width(4).breadth(5).height(3).buildTable()
-  .buildFurniture()
-  .windowsRecordBuilder()
-  .addBuilder('front').height(3).width(4).material('pvc').buildFront()
-  .buildWindows()
-  .buildElement()
-  .buildRooms()
+// Use as the optional second generic parameter when building
+const shapes = fluentBuilder<Shape[], typeof registry>()
+  .pushSubType()
+    .type('circle')
+    .area(78.54)
+    .radius(5)
+    .buildElement()
+  .pushSubType()
+    .type('rectangle')
+    .area(20)
+    .width(4)
+    .height(5)
+    .buildElement()
+  .buildArray();
+```
+
+## API Reference
+
+### Core Functions
+
+#### `fluentBuilder<T>()`
+
+Creates a new fluent builder for the specified type.
+
+**Parameters:**
+- `T`: The TypeScript type to build
+
+**Returns:** A builder instance appropriate for the type (InstanceBuilder, ArrayBuilder, or RecordBuilder)
+
+#### `unionRegistryBuilder()`
+
+Creates a new union registry builder for handling polymorphic types.
+
+**Returns:** `UnionRegistryBuilder` instance
+
+### Builder Methods
+
+All builders provide these common patterns:
+
+#### Value Assignment
+```typescript
+.propertyName(value)    // Set a property value
+.push(value)            // Add to array
+.set(key, value)        // Add to record
+```
+
+#### Nested Builders
+```typescript
+.propertyNameInstance() // Start building a nested object
+.propertyNameArray()    // Start building a nested array  
+.propertyNameRecord()   // Start building a nested record
+.propertyNameSubType()  // Start building a nested sub-type
+
+.pushInstance()         // Start building a nested object to push onto the array
+.pushArray()            // Start building a nested array to push onto the array
+.pushRecord()           // Start building a nested record to push onto the array
+.pushSubType()          // Start building a nested sub-type to push onto the array
+
+.setInstance(name)      // Start building a nested object to set on the record
+.setArray(name)         // Start building a nested array to set on the record
+.setRecord(name)        // Start building a nested record to set on the record
+.setSubType(name)       // Start building a nested sub-type to set on the record
+```
+
+#### Termination
+```typescript
+// Build and return either the result or the parent builder for continued chaining
+.build()                
+
+// all build...() functions are aliases of build() and can be used as hints to the developer, eg:
+.buildRecordName()
+.buildElement()
+.buildInstance()
+.buildArray()
+.buildRecord()
+.buildSubType()
+```
+
+## Advanced Usage
+
+### Complex Nested Structures
+
+```typescript
+interface Company {
+  name: string;
+  departments: Department[];
+  settings: Record<string, any>;
+}
+
+interface Department {
+  name: string;
+  employees: Employee[];
+  budget: number;
+}
+
+interface Employee {
+  id: number;
+  name: string;
+  role: string;
+}
+
+const company = fluentBuilder<Company>()
+  .name('TechCorp')
+  .departmentsArray()
+    .pushInstance()
+      .name('Engineering')
+      .budget(500000)
+      .employeesArray()
+        .pushInstance()
+          .id(1)
+          .name('John Doe')
+          .role('Senior Developer')
+          .build()
+        .pushInstance()
+          .id(2)
+          .name('Jane Smith')
+          .role('Tech Lead')
+          .build()
+        .buildEmployees()
+      .build()
+    .buildDepartments()
+  .settingsRecord()
+    .set('theme', 'dark')
+    .set('notifications', true)
+    .set('autoSave', false)
+    .buildSettings()
   .build();
 ```
+
+### Working with Optional Properties
+
+The builder automatically handles optional properties and will only require you to set mandatory fields:
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email?: string;  // optional
+  phone?: string;  // optional
+}
+
+// This works - only required fields need to be set
+const user = fluentBuilder<User>()
+  .id(1)
+  .name('John')
+  .build();
+
+// Optional fields can be added
+const fullUser = fluentBuilder<User>()
+  .id(1)
+  .name('John')
+  .email('john@example.com')
+  .phone('+1234567890')
+  .build();
+```
+
+## Type Safety Features
+
+### Compile-Time Validation
+
+ts-fluent-builder prevents common type and data mistakes at compile time:
+
+```typescript
+// ❌ This won't compile - missing required property
+const invalid = fluentBuilder<User>()
+  .name('John')
+  // .id(1) - missing required field
+  .build();
+
+// ❌ This won't compile - wrong type
+const wrongType = fluentBuilder<User>()
+  .id('not-a-number')  // id expects number
+  .build();
+
+// ❌ This won't compile - duplicate property
+const duplicate = fluentBuilder<User>()
+  .id(1)
+  .id(2)  // can't set id twice
+  .build();
+
+// ❌ This won't compile - duplicate record key
+const duplicateKey = fluentBuilder<Record<string, Config>>()
+  .set('production', config1)
+  .set('production', config2)  // can't set same key twice
+  .build();
+```
+
+### IntelliSense Support
+
+- Autocomplete for available properties
+- Type hints for expected values
+- Documentation in tooltips
+- Error highlighting for type mismatches
+
+## Best Practices
+
+1. **Use TypeScript**: ts-fluent-builder is designed for TypeScript and provides minimal value in plain JavaScript
+
+2. **Define Interfaces or Types First**: Always define your types before using the builders
+
+3. **Leverage IntelliSense**: Let your IDE guide you through the available methods
+
+4. **Use a Union Registry**: For polymorphic types, create a union registry to get proper type support
+
+## Contributing
+
+We welcome contributions! Please open an issue or submit a pull request on [GitHub Issues](https://github.com/NathanJAdams/ts-fluent-builder/issues).
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+**Happy Building!**

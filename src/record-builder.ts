@@ -1,12 +1,12 @@
 import { ArrayBuilder } from './array-builder';
 import { InstanceBuilder } from './instance-builder';
 import { SubTypeBuilder } from './sub-type-builder';
-import { AsSubTypeMetadata, Builder, HasOnlyIndexSignature, IsExact, IsNonBaseUserType, RecordValueType, SubTypeMetadata, UnusedName } from './utility-types';
+import { AsUnionMetadata, Builder, HasOnlyIndexSignature, IsExact, IsNonBaseUserType, RecordValueType, UnionMetadata, UnusedName } from './utility-types';
 
-type RecordBuilderValue<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> = {
+type RecordBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> = {
   set: <TName extends string> (name: UnusedName<TEntries, TName>, value: TValue) =>
     PartialRecordBuilder<
-      TSubTypeRegistry,
+      TUnionRegistry,
       TEntries & { [K in TName]: TValue },
       TValue,
       IsExact<TFinal, TEntries> extends true ? TEntries & { [K in TName]: TValue } : TFinal,
@@ -14,15 +14,15 @@ type RecordBuilderValue<TSubTypeRegistry extends readonly SubTypeMetadata<any, a
     >;
 };
 
-type RecordBuilderArray<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
+type RecordBuilderArray<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
   TValue extends Array<infer TNestedElement>
   ? {
     setArray: <TName extends string>(name: UnusedName<TEntries, TName>) =>
       ArrayBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         TNestedElement,
         PartialRecordBuilder<
-          TSubTypeRegistry,
+          TUnionRegistry,
           TEntries & { [K in TName]: TValue },
           TValue,
           IsExact<TFinal, TEntries> extends true ? TEntries & { [K in TName]: TValue } : TFinal,
@@ -33,15 +33,15 @@ type RecordBuilderArray<TSubTypeRegistry extends readonly SubTypeMetadata<any, a
   }
   : object;
 
-type RecordBuilderRecord<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
+type RecordBuilderRecord<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
   HasOnlyIndexSignature<TValue> extends true
   ? {
     setRecord: <TName extends string>(name: UnusedName<TEntries, TName>) =>
       RecordBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         RecordValueType<TValue>,
         PartialRecordBuilder<
-          TSubTypeRegistry,
+          TUnionRegistry,
           TEntries & { [K in TName]: TValue },
           TValue,
           IsExact<TFinal, TEntries> extends true ? TEntries & { [K in TName]: TValue } : TFinal,
@@ -52,19 +52,19 @@ type RecordBuilderRecord<TSubTypeRegistry extends readonly SubTypeMetadata<any, 
   }
   : object;
 
-type RecordBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
-  AsSubTypeMetadata<TSubTypeRegistry, TValue> extends infer TMetadata
+type RecordBuilderSubType<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
+  AsUnionMetadata<TUnionRegistry, TValue> extends infer TMetadata
   ? [TMetadata] extends [never]
   ? object
-  : TMetadata extends SubTypeMetadata<infer TBase, infer TSubUnion>
+  : TMetadata extends UnionMetadata<infer TBase, infer TUnion>
   ? {
     setSubType: <TName extends string>(name: UnusedName<TEntries, TName>) =>
       SubTypeBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         TBase,
-        TSubUnion,
+        TUnion,
         PartialRecordBuilder<
-          TSubTypeRegistry,
+          TUnionRegistry,
           TEntries & { [K in TName]: TValue },
           TValue,
           IsExact<TFinal, TEntries> extends true ? TEntries & { [K in TName]: TValue } : TFinal,
@@ -76,15 +76,15 @@ type RecordBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<any,
   : object
   : object;
 
-type RecordBuilderInstance<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
-  IsNonBaseUserType<TSubTypeRegistry, TValue> extends true
+type RecordBuilderInstance<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
+  IsNonBaseUserType<TUnionRegistry, TValue> extends true
   ? {
     setInstance: <TName extends string>(name: UnusedName<TEntries, TName>) =>
       InstanceBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         TValue,
         PartialRecordBuilder<
-          TSubTypeRegistry,
+          TUnionRegistry,
           TEntries & { [K in TName]: TValue },
           TValue,
           IsExact<TFinal, TEntries> extends true ? TEntries & { [K in TName]: TValue } : TFinal,
@@ -96,23 +96,23 @@ type RecordBuilderInstance<TSubTypeRegistry extends readonly SubTypeMetadata<any
   : object;
 
 export type PartialRecordBuilder<
-  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TUnionRegistry extends readonly UnionMetadata<any, any>[],
   TEntries extends Record<string, TValue>,
   TValue,
   TFinal,
   TBuildSuffix extends string
 > =
   & Builder<TFinal, TBuildSuffix>
-  & RecordBuilderValue<TSubTypeRegistry, TEntries, TValue, TFinal, TBuildSuffix>
-  & RecordBuilderArray<TSubTypeRegistry, TEntries, TValue, TFinal, TBuildSuffix>
-  & RecordBuilderRecord<TSubTypeRegistry, TEntries, TValue, TFinal, TBuildSuffix>
-  & RecordBuilderSubType<TSubTypeRegistry, TEntries, TValue, TFinal, TBuildSuffix>
-  & RecordBuilderInstance<TSubTypeRegistry, TEntries, TValue, TFinal, TBuildSuffix>
+  & RecordBuilderValue<TUnionRegistry, TEntries, TValue, TFinal, TBuildSuffix>
+  & RecordBuilderArray<TUnionRegistry, TEntries, TValue, TFinal, TBuildSuffix>
+  & RecordBuilderRecord<TUnionRegistry, TEntries, TValue, TFinal, TBuildSuffix>
+  & RecordBuilderSubType<TUnionRegistry, TEntries, TValue, TFinal, TBuildSuffix>
+  & RecordBuilderInstance<TUnionRegistry, TEntries, TValue, TFinal, TBuildSuffix>
   ;
 
 export type RecordBuilder<
-  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TUnionRegistry extends readonly UnionMetadata<any, any>[],
   TValue,
   TFinal,
   TBuildSuffix extends string
-> = PartialRecordBuilder<TSubTypeRegistry, {}, TValue, TFinal, TBuildSuffix>;
+> = PartialRecordBuilder<TUnionRegistry, {}, TValue, TFinal, TBuildSuffix>;

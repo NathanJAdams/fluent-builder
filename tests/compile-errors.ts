@@ -1,38 +1,38 @@
 import { describe, expect, test } from 'vitest';
-import { fluentBuilder, subTypeRegistryBuilder } from '../src';
+import { fluentBuilder, unionRegistryBuilder } from '../src';
 import { AlteredRootStructure, AlteredSubA, AlteredSubB, DuplicateRootStructure, DuplicateSubA, DuplicateSubB, Employee, Example, Human, Root, Root2, Root3, SubA, SubA2, SubA3, SubB, SubB2, SubB3 } from './test-types';
 
 describe('compile errors', () => {
-  describe('bad sub-type metadata', () => {
+  describe('bad union metadata', () => {
     test('cannot add the same sub type metadata type twice even after adding others in between', () => {
-      subTypeRegistryBuilder()
-        .add<Root, SubA | SubB>()
-        .add<Root2, SubA2 | SubB2>()
-        .add<Root, SubA | SubB>().
+      unionRegistryBuilder()
+        .register<Root, SubA | SubB>()
+        .register<Root2, SubA2 | SubB2>()
+        .register<Root, SubA | SubB>().
         // @ts-expect-error
-        add
+        register
         <Root3, SubA3 | SubB3>()
         .build();
     });
     test('cannot add a base type if it has the exact same structure as one already added, no way to distinguish which type to use', () => {
-      subTypeRegistryBuilder()
-        .add<Root, SubA | SubB>()
-        .add<DuplicateRootStructure, DuplicateSubA | DuplicateSubB>().
+      unionRegistryBuilder()
+        .register<Root, SubA | SubB>()
+        .register<DuplicateRootStructure, DuplicateSubA | DuplicateSubB>().
         // @ts-expect-error
-        add
+        register
         <Root3, SubA3 | SubB3>()
         .build();
     });
     test('can add a base type even if it has the same discriminator as long as the structure is different to ones previously added', () => {
-      subTypeRegistryBuilder()
-        .add<Root, SubA | SubB>()
-        .add<AlteredRootStructure, AlteredSubA | AlteredSubB>()
-        .add<Root3, SubA3 | SubB3>()
+      unionRegistryBuilder()
+        .register<Root, SubA | SubB>()
+        .register<AlteredRootStructure, AlteredSubA | AlteredSubB>()
+        .register<Root3, SubA3 | SubB3>()
         .build();
     });
     test('cannot add a sub type if it does not extend the base type', () => {
-      subTypeRegistryBuilder()
-        .add<Root,
+      unionRegistryBuilder()
+        .register<Root,
           // @ts-expect-error
           SubA2
         >()

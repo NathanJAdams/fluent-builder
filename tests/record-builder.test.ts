@@ -1,12 +1,12 @@
 import { describe, test, expect } from 'vitest';
 
-import { fluentBuilder, subTypeRegistryBuilder } from '../src';
+import { fluentBuilder, unionRegistryBuilder } from '../src';
 import { Animal, Dog, Employee, Human } from './test-types';
 
-const subTypeRegistry = subTypeRegistryBuilder()
-  .add<Animal, Dog | Human>()
+const unionRegistry = unionRegistryBuilder()
+  .register<Animal, Dog | Human>()
   .build();
-type MySubTypeRegistry = typeof subTypeRegistry;
+type MyunionRegistry = typeof unionRegistry;
 
 describe('record-builder', () => {
   describe('building', () => {
@@ -24,7 +24,7 @@ describe('record-builder', () => {
       expect(people.Employee3.alive).toBe(false);
     });
     test('builds sub types', () => {
-      const animals = fluentBuilder<Record<string, Animal>, MySubTypeRegistry>()
+      const animals = fluentBuilder<Record<string, Animal>, MyunionRegistry>()
         .setSubType('Sparky').kind('dog').food('sausage').buildSparky()
         .setSubType('Jim').kind('human').age(55).grandchildren(undefined).pets(undefined).buildJim()
         .buildRecord();

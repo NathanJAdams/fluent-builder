@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { fluentBuilder, subTypeRegistryBuilder } from '../src';
+import { fluentBuilder, unionRegistryBuilder } from '../src';
 import { Chair, House, Nested1, RoomObject, Table } from './test-types';
 
 describe('nesting', () => {
@@ -18,11 +18,11 @@ describe('nesting', () => {
     expect(nested1.nested2.nested3.nested4.nested5.xyz).toBe('hello');
   });
   test('random', () => {
-    const subTypeRegistry = subTypeRegistryBuilder()
-      .add<RoomObject, Chair | Table>()
+    const unionRegistry = unionRegistryBuilder()
+      .register<RoomObject, Chair | Table>()
       .build();
-    type MySubTypeRegistry = typeof subTypeRegistry;
-    const house = fluentBuilder<House, MySubTypeRegistry>()
+    type MyunionRegistry = typeof unionRegistry;
+    const house = fluentBuilder<House, MyunionRegistry>()
       .roomsArray()
       .pushInstance()
       .windowsRecord()

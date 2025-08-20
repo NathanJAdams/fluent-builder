@@ -2,13 +2,13 @@ import { ArrayBuilder } from './array-builder';
 import { RecordBuilder } from './record-builder';
 import { SubTypeBuilder } from './sub-type-builder';
 import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX } from './suffixes';
-import { ArrayElementType, AsRequiredKeys, AsSubTypeMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, RecordValueType, SubTypeMetadata, UnusedKeys } from './utility-types';
+import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, RecordValueType, UnionMetadata, UnusedKeys } from './utility-types';
 
-type InstanceBuilderValue<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+type InstanceBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial>]:
   (value: TSchema[K]) =>
     PartialInstanceBuilder<
-      TSubTypeRegistry,
+      TUnionRegistry,
       TSchema,
       TPartial & { [P in K]: TSchema[K] },
       TFinal,
@@ -16,14 +16,14 @@ type InstanceBuilderValue<TSubTypeRegistry extends readonly SubTypeMetadata<any,
     >;
 };
 
-type InstanceBuilderArray<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+type InstanceBuilderArray<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial> as ArrayElementType<TSchema[K]> extends never ? never : `${K}${typeof ARRAY_SUFFIX}`]:
   () =>
     ArrayBuilder<
-      TSubTypeRegistry,
+      TUnionRegistry,
       ArrayElementType<TSchema[K]>,
       PartialInstanceBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         TSchema,
         TPartial & { [P in K]: TSchema[K] },
         TFinal,
@@ -33,14 +33,14 @@ type InstanceBuilderArray<TSubTypeRegistry extends readonly SubTypeMetadata<any,
     >;
 };
 
-type InstanceBuilderRecord<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+type InstanceBuilderRecord<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial> as HasOnlyIndexSignature<Required<TSchema>[K]> extends true ? `${K}${typeof RECORD_SUFFIX}` : never]:
   () =>
     RecordBuilder<
-      TSubTypeRegistry,
+      TUnionRegistry,
       RecordValueType<TSchema[K]>,
       PartialInstanceBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         TSchema,
         TPartial & { [P in K]: TSchema[K] },
         TFinal,
@@ -50,16 +50,16 @@ type InstanceBuilderRecord<TSubTypeRegistry extends readonly SubTypeMetadata<any
     >
 };
 
-type InstanceBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
-  [K in UnusedKeys<TSchema, TPartial> as AsSubTypeMetadata<TSubTypeRegistry, Required<TSchema>[K]> extends never ? never : `${K}${typeof SUB_TYPE_SUFFIX}`]:
-  AsSubTypeMetadata<TSubTypeRegistry, Required<TSchema>[K]> extends SubTypeMetadata<infer TBase, infer TSubUnion>
+type InstanceBuilderSubType<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+  [K in UnusedKeys<TSchema, TPartial> as AsUnionMetadata<TUnionRegistry, Required<TSchema>[K]> extends never ? never : `${K}${typeof SUB_TYPE_SUFFIX}`]:
+  AsUnionMetadata<TUnionRegistry, Required<TSchema>[K]> extends UnionMetadata<infer TBase, infer TUnion>
   ? () =>
     SubTypeBuilder<
-      TSubTypeRegistry,
+      TUnionRegistry,
       TBase,
-      TSubUnion,
+      TUnion,
       PartialInstanceBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         TSchema,
         TPartial & { [P in K]: TSchema[K] },
         TFinal,
@@ -70,14 +70,14 @@ type InstanceBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<an
   : never;
 };
 
-type InstanceBuilderInstance<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
-  [K in UnusedKeys<TSchema, TPartial> as IsNonBaseUserType<TSubTypeRegistry, Required<TSchema>[K]>  extends true ? `${K}${typeof INSTANCE_SUFFIX}` : never]:
+type InstanceBuilderInstance<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+  [K in UnusedKeys<TSchema, TPartial> as IsNonBaseUserType<TUnionRegistry, Required<TSchema>[K]>  extends true ? `${K}${typeof INSTANCE_SUFFIX}` : never]:
   () =>
     InstanceBuilder<
-      TSubTypeRegistry,
+      TUnionRegistry,
       Required<TSchema>[K],
       PartialInstanceBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         TSchema,
         TPartial & { [P in K]: TSchema[K] },
         TFinal,
@@ -88,23 +88,23 @@ type InstanceBuilderInstance<TSubTypeRegistry extends readonly SubTypeMetadata<a
 };
 
 export type PartialInstanceBuilder<
-  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TUnionRegistry extends readonly UnionMetadata<any, any>[],
   TSchema,
   TPartial extends Partial<TSchema>,
   TFinal,
   TBuildSuffix extends string
 > =
   & (AsRequiredKeys<TSchema, TPartial> extends never ? Builder<TFinal, TBuildSuffix> : object)
-  & InstanceBuilderValue<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
-  & InstanceBuilderArray<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
-  & InstanceBuilderRecord<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
-  & InstanceBuilderSubType<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
-  & InstanceBuilderInstance<TSubTypeRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & InstanceBuilderValue<TUnionRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & InstanceBuilderArray<TUnionRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & InstanceBuilderRecord<TUnionRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & InstanceBuilderSubType<TUnionRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & InstanceBuilderInstance<TUnionRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
   ;
 
 export type InstanceBuilder<
-  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TUnionRegistry extends readonly UnionMetadata<any, any>[],
   TSchema,
   TFinal,
   TBuildSuffix extends string
-> = PartialInstanceBuilder<TSubTypeRegistry, TSchema, {}, TFinal, TBuildSuffix>;
+> = PartialInstanceBuilder<TUnionRegistry, TSchema, {}, TFinal, TBuildSuffix>;

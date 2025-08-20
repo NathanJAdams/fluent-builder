@@ -1,79 +1,79 @@
 import { InstanceBuilder } from './instance-builder';
 import { RecordBuilder } from './record-builder';
 import { SubTypeBuilder } from './sub-type-builder';
-import { ArrayElementType, AsSubTypeMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, RecordValueType, SubTypeMetadata } from './utility-types';
+import { ArrayElementType, AsUnionMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, RecordValueType, UnionMetadata } from './utility-types';
 
-type ArrayBuilderValue<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> = {
-  push: (value: TElement) => ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>;
+type ArrayBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> = {
+  push: (value: TElement) => ArrayBuilder<TUnionRegistry, TElement, TFinal, TBuildSuffix>;
 };
 
-type ArrayBuilderArray<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
+type ArrayBuilderArray<TUnionRegistry extends readonly UnionMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
   TElement extends any[]
   ? {
     pushArray: () =>
       ArrayBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         ArrayElementType<TElement>,
-        ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>,
+        ArrayBuilder<TUnionRegistry, TElement, TFinal, TBuildSuffix>,
         'Array'
       >;
   }
   : object;
 
-type ArrayBuilderRecord<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
+type ArrayBuilderRecord<TUnionRegistry extends readonly UnionMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
   HasOnlyIndexSignature<TElement> extends true
   ? {
     pushRecord: () =>
       RecordBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         RecordValueType<TElement>,
-        ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>,
+        ArrayBuilder<TUnionRegistry, TElement, TFinal, TBuildSuffix>,
         'Record'
       >;
   }
   : object;
 
-type ArrayBuilderSubType<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
-  AsSubTypeMetadata<TSubTypeRegistry, TElement> extends infer TMetadata
+type ArrayBuilderSubType<TUnionRegistry extends readonly UnionMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
+  AsUnionMetadata<TUnionRegistry, TElement> extends infer TMetadata
   ? [TMetadata] extends [never]
   ? object
-  : TMetadata extends SubTypeMetadata<infer TBase, infer TSubUnion>
+  : TMetadata extends UnionMetadata<infer TBase, infer TUnion>
   ? {
     pushSubType: () =>
       SubTypeBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         TBase,
-        TSubUnion,
-        ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>,
+        TUnion,
+        ArrayBuilder<TUnionRegistry, TElement, TFinal, TBuildSuffix>,
         'Element'
       >;
   }
   : object
   : object;
 
-type ArrayBuilderInstance<TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
-  IsNonBaseUserType<TSubTypeRegistry, TElement> extends true
+type ArrayBuilderInstance<TUnionRegistry extends readonly UnionMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
+  IsNonBaseUserType<TUnionRegistry, TElement> extends true
   ? {
     pushInstance: () =>
       InstanceBuilder<
-        TSubTypeRegistry,
+        TUnionRegistry,
         TElement,
-        ArrayBuilder<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>,
+        ArrayBuilder<TUnionRegistry, TElement, TFinal, TBuildSuffix>,
         'Element'
       >;
   }
   : object;
 
 export type ArrayBuilder<
-  TSubTypeRegistry extends readonly SubTypeMetadata<any, any>[],
+  TUnionRegistry extends readonly UnionMetadata<any, any>[],
   TElement,
   TFinal,
   TBuildSuffix extends string
 > =
   & Builder<TFinal, TBuildSuffix>
-  & ArrayBuilderValue<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
-  & ArrayBuilderArray<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
-  & ArrayBuilderRecord<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
-  & ArrayBuilderSubType<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
-  & ArrayBuilderInstance<TSubTypeRegistry, TElement, TFinal, TBuildSuffix>
+  & ArrayBuilderValue<TUnionRegistry, TElement, TFinal, TBuildSuffix>
+  & ArrayBuilderArray<TUnionRegistry, TElement, TFinal, TBuildSuffix>
+  & ArrayBuilderRecord<TUnionRegistry, TElement, TFinal, TBuildSuffix>
+  & ArrayBuilderSubType<TUnionRegistry, TElement, TFinal, TBuildSuffix>
+  & ArrayBuilderInstance<TUnionRegistry, TElement, TFinal, TBuildSuffix>
   ;
