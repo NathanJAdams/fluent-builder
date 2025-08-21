@@ -3,8 +3,9 @@ import { InstanceBuilder } from './instance-builder';
 import { createBuilder } from './proxy';
 import { RecordBuilder } from './record-builder';
 import { SubTypeBuilder } from './sub-type-builder';
+import { TupleBuilder } from './tuple-builder';
 import { UnionRegistryBuilder, unionRegistryBuilderInternal } from './union-registry-builder';
-import { AsUnionMetadata, HasOnlyIndexSignature, IsNonBaseUserType, IsValid, RecordValueType, UnionMetadata } from './utility-types';
+import { AsUnionMetadata, HasOnlyIndexSignature, IsNonBaseUserType, IsTuple, IsValid, RecordValueType, UnionMetadata } from './utility-types';
 
 export const unionRegistryBuilder = (): UnionRegistryBuilder<[]> => {
   return unionRegistryBuilderInternal([] as const);
@@ -16,6 +17,10 @@ export const fluentBuilder = <T, TUnionRegistry extends readonly UnionMetadata<a
 )
   : T extends Array<infer TElement>
   ? ArrayBuilder<TUnionRegistry, TElement, T, 'Array'>
+  : IsTuple<T> extends true
+  ? T extends readonly any[]
+  ? TupleBuilder<TUnionRegistry, T, 0, T, 'Tuple'>
+  : never
   : HasOnlyIndexSignature<T> extends true
   ? RecordBuilder<TUnionRegistry, RecordValueType<T>, T, 'Record'>
   : IsNonBaseUserType<TUnionRegistry, T> extends true
