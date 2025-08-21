@@ -27,6 +27,23 @@ export type IsValid<T> =
   ? false
   : true;
 
+type NextTupleIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, never];
+export type NextTupleIndex<T extends number> = NextTupleIndexes[T];
+export type IsTuple<T> =
+  IsAny<T> extends true
+  ? false
+  : T extends readonly unknown[]
+  ? number extends T['length']
+  ? false
+  : T['length'] extends number
+  ? T extends readonly [...infer Elements]
+  ? Elements['length'] extends T['length']
+  ? true
+  : false
+  : false
+  : false
+  : false;
+export type TupleLength<T extends readonly any[]> = T['length'];
 export type IsExact<T, U> =
   [T] extends [U]
   ? [U] extends [T]
@@ -78,14 +95,28 @@ export type UnusedKeys<TSchema, TPartial extends Partial<TSchema>> = string & Ex
 
 export type UnusedName<TEntries extends Record<string, any>, TName extends string> = TName extends keyof TEntries ? never : TName;
 
-export type RequiredKeys<T> = {
+type RequiredKeys<T> = {
   [K in keyof T]-?: undefined extends T[K] ? never : K
 }[keyof T];
-
-export type AsRequiredKeys<TSchema, TPartial extends Partial<TSchema>> = Exclude<RequiredKeys<TSchema>, keyof TPartial>;
+type IsPartialSubset<T, TPartial> =
+  keyof TPartial extends never
+  ? true
+  : keyof TPartial extends keyof T
+  ? {
+    [K in keyof TPartial]: TPartial[K] extends T[K] ? true : false;
+  }[keyof TPartial] extends false
+  ? false
+  : true
+  : false;
+export type AsRequiredKeys<TUnion, TPartial extends Partial<TUnion>> =
+  TUnion extends any
+  ? IsPartialSubset<TUnion, TPartial> extends true
+  ? Exclude<RequiredKeys<TUnion>, keyof TPartial>
+  : never
+  : never;
 
 export type UnionMetadata<
-  TBase extends Record<string, any>,
+  TBase,
   TUnion extends TBase
 > = {
   __base: TBase;
