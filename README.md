@@ -8,7 +8,7 @@ A powerful TypeScript library for building any complex type, 100% fluent, arbitr
 - **Data-Safe**: Prevents overwriting data or building incomplete objects
 - **Fluent API**: Intuitive method chaining for object construction
 - **IntelliSense**: Rich autocomplete and type hints in your IDE
-- **Build Any Complex Type**: Support for user-defined types & interfaces, arrays, records, unions
+- **Build Any Complex Type**: Support for user-defined types & interfaces, arrays, records, unions, tuples
 - **Union Registry**: Advanced support for polymorphic object construction
 - **Flexible**: Works with any valid TypeScript type structure
 
@@ -61,17 +61,17 @@ const user = fluentBuilder<User>()
 
 ## Core Concepts
 
-### Instance Builder
+### Fluent Builder
 
-Build complex objects with nested properties:
+Build any complex type in any combination at arbitrary depth (subject to compiler limitations):
 
 ```typescript
+// objects
 interface Person {
   name: string;
   age: number;
   address: Address;
 }
-
 const person = fluentBuilder<Person>()
   .name('Alice')
   .age(30)
@@ -83,18 +83,14 @@ const person = fluentBuilder<Person>()
   .build();
 ```
 
-### Array Builder
-
-Construct arrays with type-safe element addition:
-
 ```typescript
+// arrays
 const numbers = fluentBuilder<number[]>()
   .push(1)
   .push(2)
   .push(3)
   .build(); // [1, 2, 3]
 
-// Nested array building
 interface TodoItem {
   id: number;
   title: string;
@@ -121,11 +117,8 @@ const todoList = fluentBuilder<TodoList>()
   .build();
 ```
 
-### Record Builder
-
-Build record/dictionary types with dynamic keys:
-
 ```typescript
+// records
 interface Config {
   url: string;
   timeout: number;
@@ -146,11 +139,8 @@ const config = fluentBuilder<Record<string, Config>>()
   .buildRecord();
 ```
 
-### Union Registry
-
-Handle polymorphic types and inheritance hierarchies:
-
 ```typescript
+// polymorphic types via unions
 import { unionRegistryBuilder } from 'ts-fluent-builder';
 
 // Define base and derived types
@@ -193,6 +183,16 @@ const shapes = fluentBuilder<Shape[], typeof registry>()
   .buildArray();
 ```
 
+```typescript
+// tuples
+const falsyValues = fluentBuilder<[boolean, number, bigint, string]>()
+  .index0(false)
+  .index1(0)
+  .index2(0n)
+  .index3('')
+  .buildTuple();
+```
+
 ## API Reference
 
 ### Core Functions
@@ -219,8 +219,9 @@ All builders provide these common patterns:
 #### Value Assignment
 ```typescript
 .propertyName(value)    // Set a property value
-.push(value)            // Add to array
-.set(key, value)        // Add to record
+.push(value)            // Append to an array
+.set(key, value)        // Set a key value entry on a record
+.indexN(value)          // Set indexed value on a tuple
 ```
 
 #### Nested Builders
@@ -229,16 +230,19 @@ All builders provide these common patterns:
 .propertyNameArray()    // Start building a nested array  
 .propertyNameRecord()   // Start building a nested record
 .propertyNameSubType()  // Start building a nested sub-type
+.propertyNameTuple()    // Start building a nested tuple
 
 .pushInstance()         // Start building a nested object to push onto the array
 .pushArray()            // Start building a nested array to push onto the array
 .pushRecord()           // Start building a nested record to push onto the array
 .pushSubType()          // Start building a nested sub-type to push onto the array
+.pushTuple()            // Start building a nested tuple to push onto the array
 
 .setInstance(name)      // Start building a nested object to set on the record
 .setArray(name)         // Start building a nested array to set on the record
 .setRecord(name)        // Start building a nested record to set on the record
 .setSubType(name)       // Start building a nested sub-type to set on the record
+.setTuple(name)         // Start building a nested tuple to set on the record
 ```
 
 #### Termination
@@ -253,6 +257,7 @@ All builders provide these common patterns:
 .buildArray()
 .buildRecord()
 .buildSubType()
+.buildTuple()
 ```
 
 ## Advanced Usage

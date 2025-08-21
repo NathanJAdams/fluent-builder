@@ -27,6 +27,14 @@ export type IsValid<T> =
   ? false
   : true;
 
+export type IsArray<T> =
+  IsAny<T> extends true
+  ? false
+  : T extends readonly unknown[]
+  ? number extends T['length']
+  ? true
+  : false
+  : false;
 type NextTupleIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, never];
 export type NextTupleIndex<T extends number> = NextTupleIndexes[T];
 export type IsTuple<T> =
@@ -51,7 +59,12 @@ export type IsExact<T, U> =
   : false
   : false;
 
-export type ArrayElementType<T> = T extends (infer U)[] ? U : never;
+export type ArrayElementType<T> =
+  IsArray<T> extends true
+  ? T extends readonly (infer U)[]
+  ? U
+  : never
+  : never;
 
 export type RecordValueType<T> = T extends Record<PropertyKey, infer V> ? V : never;
 

@@ -2,14 +2,14 @@ import { InstanceBuilder } from './instance-builder';
 import { RecordBuilder } from './record-builder';
 import { SubTypeBuilder } from './sub-type-builder';
 import { TupleBuilder } from './tuple-builder';
-import { ArrayElementType, AsUnionMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, IsTuple, RecordValueType, UnionMetadata } from './utility-types';
+import { ArrayElementType, AsUnionMetadata, Builder, HasOnlyIndexSignature, IsArray, IsNonBaseUserType, IsTuple, RecordValueType, UnionMetadata } from './utility-types';
 
 type ArrayBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> = {
   push: (value: TElement) => ArrayBuilder<TUnionRegistry, TElement, TFinal, TBuildSuffix>;
 };
 
 type ArrayBuilderArray<TUnionRegistry extends readonly UnionMetadata<any, any>[], TElement, TFinal, TBuildSuffix extends string> =
-  TElement extends any[]
+  IsArray<TElement> extends true
   ? {
     pushArray: () =>
       ArrayBuilder<

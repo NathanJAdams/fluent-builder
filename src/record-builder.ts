@@ -2,7 +2,7 @@ import { ArrayBuilder } from './array-builder';
 import { InstanceBuilder } from './instance-builder';
 import { SubTypeBuilder } from './sub-type-builder';
 import { TupleBuilder } from './tuple-builder';
-import { AsUnionMetadata, Builder, HasOnlyIndexSignature, IsExact, IsNonBaseUserType, IsTuple, RecordValueType, UnionMetadata, UnusedName } from './utility-types';
+import { AsUnionMetadata, Builder, HasOnlyIndexSignature, IsArray, IsExact, IsNonBaseUserType, IsTuple, RecordValueType, UnionMetadata, UnusedName } from './utility-types';
 
 type RecordBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> = {
   set: <TName extends string> (name: UnusedName<TEntries, TName>, value: TValue) =>
@@ -16,7 +16,8 @@ type RecordBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[
 };
 
 type RecordBuilderArray<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
-  TValue extends Array<infer TNestedElement>
+  IsArray<TValue> extends true
+  ? TValue extends Array<infer TNestedElement>
   ? {
     setArray: <TName extends string>(name: UnusedName<TEntries, TName>) =>
       ArrayBuilder<
@@ -32,6 +33,7 @@ type RecordBuilderArray<TUnionRegistry extends readonly UnionMetadata<any, any>[
         TName
       >;
   }
+  : object
   : object;
 
 type RecordBuilderRecord<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =

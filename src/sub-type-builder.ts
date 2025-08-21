@@ -3,7 +3,7 @@ import { InstanceBuilder } from './instance-builder';
 import { RecordBuilder } from './record-builder';
 import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX, TUPLE_SUFFIX } from './suffixes';
 import { TupleBuilder } from './tuple-builder';
-import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, FilterByPartial, HasOnlyIndexSignature, IsNonBaseUserType, IsTuple, Keys, RecordValueType, UnionMetadata, Values } from './utility-types';
+import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, FilterByPartial, HasOnlyIndexSignature, IsArray, IsNonBaseUserType, IsTuple, Keys, RecordValueType, UnionMetadata, Values } from './utility-types';
 
 type SubTypeBuilderValue<
   TUnionRegistry extends readonly UnionMetadata<any, any>[],
@@ -33,7 +33,7 @@ type SubTypeBuilderArray<
   TFinal,
   TBuildSuffix extends string
 > = {
-    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as ArrayElementType<TUnion[K]> extends never ? never : `${K}${typeof ARRAY_SUFFIX}`]:
+    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as IsArray<TUnion[K]> extends true ? `${K}${typeof ARRAY_SUFFIX}` : never]:
     <V extends ArrayElementType<Values<FilterByPartial<TUnion, TPartial>, K>>>(value: V) =>
       () => ArrayBuilder<
         TUnionRegistry,

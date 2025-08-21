@@ -3,7 +3,7 @@ import { RecordBuilder } from './record-builder';
 import { SubTypeBuilder } from './sub-type-builder';
 import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX, TUPLE_SUFFIX } from './suffixes';
 import { TupleBuilder } from './tuple-builder';
-import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, IsTuple, RecordValueType, UnionMetadata, UnusedKeys } from './utility-types';
+import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, HasOnlyIndexSignature, IsArray, IsNonBaseUserType, IsTuple, RecordValueType, UnionMetadata, UnusedKeys } from './utility-types';
 
 type InstanceBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial>]:
@@ -18,7 +18,7 @@ type InstanceBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any
 };
 
 type InstanceBuilderArray<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
-  [K in UnusedKeys<TSchema, TPartial> as ArrayElementType<TSchema[K]> extends never ? never : `${K}${typeof ARRAY_SUFFIX}`]:
+  [K in UnusedKeys<TSchema, TPartial> as IsArray<TSchema[K]> extends true ? `${K}${typeof ARRAY_SUFFIX}` : never]:
   () =>
     ArrayBuilder<
       TUnionRegistry,
