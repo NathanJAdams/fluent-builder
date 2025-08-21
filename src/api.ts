@@ -11,13 +11,17 @@ export const fluentBuilder = <T>(): ReturnType<T> => {
 };
 
 type ReturnType<T> =
-  IsValid<T> extends false
-    ? ErrorNotBuildable
-    : HasOnlyIndexSignature<T> extends true
-      ? RecordBuilder<RecordValueType<T>, T, typeof suffixes.record>
-      : T extends any[]
-        ? ArrayBuilder<T, T, typeof suffixes.array>
-        : IsUserType<T> extends true
-          ? ObjectBuilder<T, T, typeof suffixes.object>
-          : ErrorValidButNotBuildable
+  [T] extends [any] // prevent distribution
+    ? IsValid<T> extends false
+      ? ErrorNotBuildable
+      : HasOnlyIndexSignature<T> extends true
+        ? RecordBuilder<RecordValueType<T>, T, typeof suffixes.record>
+        : [T] extends [infer U]
+          ? U extends any[]
+            ? ArrayBuilder<U, U, typeof suffixes.array>
+            : IsUserType<T> extends true
+              ? ObjectBuilder<T, T, typeof suffixes.object>
+              : ErrorValidButNotBuildable
+          : never
+    : never
 ;
