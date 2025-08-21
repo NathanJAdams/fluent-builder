@@ -1,71 +1,106 @@
 import { ObjectBuilder } from './object-builder';
 import { RecordBuilder } from './record-builder';
-import { TupleBuilder } from './tuple-builder';
-import { ArrayElementType, Builder, HasOnlyIndexSignature, IsArray, IsTuple, IsUserType, RecordValueType } from './utility-types';
+import { ArrayLengthWithoutRest, ArrayRest, Builder, HasOnlyIndexSignature, Increment, IsExact, IsUserType, RecordValueType } from './utility-types';
 
-type ArrayBuilderValue<TElement, TFinal, TBuildSuffix extends string> = {
-  push: (value: TElement) => ArrayBuilder<TElement, TFinal, TBuildSuffix>;
+type IndexedArrayBuilderValue<TArray extends readonly any[], TFixedLength extends number, TRest, TIndex extends number, TFinal, TBuildSuffix extends string> = {
+  [K in TIndex as `index${K}`]: (value: TArray[TIndex]) => IndexedArrayBuilder<TArray, TFixedLength, TRest, Increment<TIndex>, TFinal, TBuildSuffix>;
+};
+type RestArrayBuilderValue<TElement, TFinal, TBuildSuffix extends string> = {
+  push: (value: TElement) => RestArrayBuilder<TElement, TFinal, TBuildSuffix>;
 };
 
-type ArrayBuilderArray<TElement, TFinal, TBuildSuffix extends string> =
-  IsArray<TElement> extends true
+type IndexedArrayBuilderArray<TArray extends readonly any[], TFixedLength extends number, TRest, TIndex extends number, TFinal, TBuildSuffix extends string> =
+  TArray[TIndex] extends any[]
   ? {
-    pushArray: () =>
+    [K in TIndex as `index${K}Array`]:
+    () =>
       ArrayBuilder<
-        ArrayElementType<TElement>,
-        ArrayBuilder<TElement, TFinal, TBuildSuffix>,
+        TArray[TIndex],
+        IndexedArrayBuilder<TArray, TFixedLength, TRest, Increment<TIndex>, TFinal, TBuildSuffix>,
+        `Index${K}`
+      >;
+  }
+  : object;
+type RestArrayBuilderArray<TElement, TFinal, TBuildSuffix extends string> =
+  TElement extends any[]
+  ? {
+    pushArray:
+    () =>
+      ArrayBuilder<
+        TElement,
+        RestArrayBuilder<TElement, TFinal, TBuildSuffix>,
         'Element'
       >;
   }
   : object;
 
-type ArrayBuilderObject<TElement, TFinal, TBuildSuffix extends string> =
+type IndexedArrayBuilderObject<TArray extends readonly any[], TFixedLength extends number, TRest, TIndex extends number, TFinal, TBuildSuffix extends string> =
+  IsUserType<TArray[TIndex]> extends true
+  ? {
+    [K in TIndex as `index${K}Object`]: () =>
+      ObjectBuilder<
+        TArray[TIndex],
+        IndexedArrayBuilder<TArray, TFixedLength, TRest, Increment<TIndex>, TFinal, TBuildSuffix>,
+        `Index${K}`
+      >;
+  }
+  : object;
+type RestArrayBuilderObject<TElement, TFinal, TBuildSuffix extends string> =
   IsUserType<TElement> extends true
   ? {
     pushObject: () =>
       ObjectBuilder<
         TElement,
-        ArrayBuilder<TElement, TFinal, TBuildSuffix>,
+        RestArrayBuilder<TElement, TFinal, TBuildSuffix>,
         'Element'
       >;
   }
   : object;
 
-type ArrayBuilderRecord<TElement, TFinal, TBuildSuffix extends string> =
+type IndexedArrayBuilderRecord<TArray extends readonly any[], TFixedLength extends number, TRest, TIndex extends number, TFinal, TBuildSuffix extends string> =
+  HasOnlyIndexSignature<TArray[TIndex]> extends true
+  ? {
+    [K in TIndex as `index${K}Record`]: () =>
+      RecordBuilder<
+        RecordValueType<TArray[TIndex]>,
+        IndexedArrayBuilder<TArray, TFixedLength, TRest, Increment<TIndex>, TFinal, TBuildSuffix>,
+        `Index${K}`
+      >;
+  }
+  : object;
+type RestArrayBuilderRecord<TElement, TFinal, TBuildSuffix extends string> =
   HasOnlyIndexSignature<TElement> extends true
   ? {
     pushRecord: () =>
       RecordBuilder<
         RecordValueType<TElement>,
-        ArrayBuilder<TElement, TFinal, TBuildSuffix>,
+        RestArrayBuilder<TElement, TFinal, TBuildSuffix>,
         'Element'
       >;
   }
   : object;
 
-type ArrayBuilderTuple<TElement, TFinal, TBuildSuffix extends string> =
-  IsTuple<TElement> extends true
-  ? TElement extends readonly any[]
-  ? {
-    pushTuple: () =>
-      TupleBuilder<
-        TElement,
-        ArrayBuilder<TElement, TFinal, TBuildSuffix>,
-        'Element'
-      >;
-  }
-  : object
-  : object;
+type IndexedArrayBuilder<TArray extends readonly any[], TFixedLength extends number, TRest, TIndex extends number, TFinal, TBuildSuffix extends string> =
+  IsExact<TFixedLength, TIndex> extends true
+  ? RestArrayBuilder<TRest, TFinal, TBuildSuffix>
+  : (
+    & IndexedArrayBuilderValue<TArray, TFixedLength, TRest, TIndex, TFinal, TBuildSuffix>
+    & IndexedArrayBuilderArray<TArray, TFixedLength, TRest, TIndex, TFinal, TBuildSuffix>
+    & IndexedArrayBuilderObject<TArray, TFixedLength, TRest, TIndex, TFinal, TBuildSuffix>
+    & IndexedArrayBuilderRecord<TArray, TFixedLength, TRest, TIndex, TFinal, TBuildSuffix>
+  );
 
-export type ArrayBuilder<
-  TElement,
-  TFinal,
-  TBuildSuffix extends string
-> =
+type RestArrayBuilder<TElement, TFinal, TBuildSuffix extends string> =
   & Builder<TFinal, TBuildSuffix>
-  & ArrayBuilderValue<TElement, TFinal, TBuildSuffix>
-  & ArrayBuilderArray<TElement, TFinal, TBuildSuffix>
-  & ArrayBuilderObject<TElement, TFinal, TBuildSuffix>
-  & ArrayBuilderRecord<TElement, TFinal, TBuildSuffix>
-  & ArrayBuilderTuple<TElement, TFinal, TBuildSuffix>
+  & (
+    IsExact<TElement, never> extends true
+    ? object
+    : (
+      & RestArrayBuilderValue<TElement, TFinal, TBuildSuffix>
+      & RestArrayBuilderArray<TElement, TFinal, TBuildSuffix>
+      & RestArrayBuilderObject<TElement, TFinal, TBuildSuffix>
+      & RestArrayBuilderRecord<TElement, TFinal, TBuildSuffix>
+    )
+  )
   ;
+export type ArrayBuilder<TArray extends any[], TFinal, TBuildSuffix extends string> = IndexedArrayBuilder<TArray, ArrayLengthWithoutRest<TArray>, ArrayRest<TArray>, 0, TFinal, TBuildSuffix>;

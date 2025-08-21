@@ -1,9 +1,9 @@
 import { describe, test, expect } from 'vitest';
 
 import { fluentBuilder } from '../src';
-import { Example, SubA, SubB, SubBB, Union, UnionMemberWithNonEmptyArray } from './test-types';
+import { Example, SubA, SubB, SubBB, UnionMemberWithNonEmptyArray } from './test-types';
 
-describe('union-builder', () => {
+describe('object-builder', () => {
   describe('building', () => {
     test('builds an object', () => {
       const example = fluentBuilder<Example>().a(1).b('b').c(3).d(4).e(5).buildObject();
@@ -45,9 +45,9 @@ describe('union-builder', () => {
     });
     test('builds a sub-type type with a non empty array', () => {
       const values = fluentBuilder<UnionMemberWithNonEmptyArray>()
-        .numbersNonEmptyArray().buildNumbersNonEmpty()
+        .numbersNonEmptyArray().index0(4324).push(432).buildNumbersNonEmpty()
         .numbersNormalArray().push(123).buildNumbersNormal()
-        .numbersTupleTuple().index0(7483).index1(7584).index2(654).buildNumbersTuple()
+        .numbersTupleArray().index0(7483).index1(7584).index2(654).buildNumbersTuple()
         .buildObject();
       expect(values.numbersNonEmpty.length).toBe(0);
       expect(values.numbersNormal.length).toBe(1);

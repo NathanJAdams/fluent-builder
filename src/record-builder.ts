@@ -1,7 +1,6 @@
 import { ArrayBuilder } from './array-builder';
 import { ObjectBuilder } from './object-builder';
-import { TupleBuilder } from './tuple-builder';
-import { Builder, HasOnlyIndexSignature, IsArray, IsExact, IsTuple, IsUserType, RecordValueType, UnusedName } from './utility-types';
+import { Builder, HasOnlyIndexSignature, IsExact, IsUserType, RecordValueType, UnusedName } from './utility-types';
 
 type RecordBuilderValue<TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> = {
   set: <TName extends string> (name: UnusedName<TEntries, TName>, value: TValue) =>
@@ -14,12 +13,11 @@ type RecordBuilderValue<TEntries extends Record<string, TValue>, TValue, TFinal,
 };
 
 type RecordBuilderArray<TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
-  IsArray<TValue> extends true
-  ? TValue extends Array<infer TNestedElement>
+  TValue extends any[]
   ? {
     setArray: <TName extends string>(name: UnusedName<TEntries, TName>) =>
       ArrayBuilder<
-        TNestedElement,
+        TValue,
         PartialRecordBuilder<
           TEntries & { [K in TName]: TValue },
           TValue,
@@ -29,7 +27,6 @@ type RecordBuilderArray<TEntries extends Record<string, TValue>, TValue, TFinal,
         TName
       >;
   }
-  : object
   : object;
 
 type RecordBuilderObject<TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
@@ -66,32 +63,12 @@ type RecordBuilderRecord<TEntries extends Record<string, TValue>, TValue, TFinal
   }
   : object;
 
-type RecordBuilderTuple<TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
-  IsTuple<TValue> extends true
-  ? TValue extends readonly any[]
-  ? {
-    setTuple: <TName extends string>(name: UnusedName<TEntries, TName>) =>
-      TupleBuilder<
-        TValue,
-        PartialRecordBuilder<
-          TEntries & { [K in TName]: TValue },
-          TValue,
-          IsExact<TFinal, TEntries> extends true ? TEntries & { [K in TName]: TValue } : TFinal,
-          TBuildSuffix
-        >,
-        TName
-      >;
-  }
-  : object
-  : object;
-
 export type PartialRecordBuilder<TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
   & Builder<TFinal, TBuildSuffix>
   & RecordBuilderValue<TEntries, TValue, TFinal, TBuildSuffix>
   & RecordBuilderArray<TEntries, TValue, TFinal, TBuildSuffix>
   & RecordBuilderObject<TEntries, TValue, TFinal, TBuildSuffix>
   & RecordBuilderRecord<TEntries, TValue, TFinal, TBuildSuffix>
-  & RecordBuilderTuple<TEntries, TValue, TFinal, TBuildSuffix>
   ;
 
 export type RecordBuilder<TValue, TFinal, TBuildSuffix extends string> = PartialRecordBuilder<{}, TValue, TFinal, TBuildSuffix>;

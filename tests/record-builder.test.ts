@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 
 import { fluentBuilder } from '../src';
-import { Animal, Dog, Employee, Human } from './test-types';
+import { Dog, Employee, Human } from './test-types';
 
 describe('record-builder', () => {
   describe('building', () => {

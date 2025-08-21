@@ -65,5 +65,15 @@ describe('array-builder', () => {
       expect(values[0].name).toBe('Tim');
       expect(values[1].name).toBe('Ann');
     });
+    test('builds a tuple type with literal entries', () => {
+      const values = fluentBuilder<[boolean, string, number]>()
+        .index0(true)
+        .index1('hello')
+        .index2(3543)
+        .buildArray();
+      expect(values[0]).toBe(true);
+      expect(values[1]).toBe('hello');
+      expect(values[2]).toBe(3543);
+    });
   });
 });

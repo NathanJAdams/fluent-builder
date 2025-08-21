@@ -26,37 +26,19 @@ export type IsValid<T> =
   : IsEmpty<T> extends true
   ? false
   : true;
-export type IsArray<T> =
-  IsAny<T> extends true
-  ? false
-  : T extends readonly unknown[]
-  ? number extends T['length']
-  ? true
-  : false
-  : false;
 type NextIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, never];
 export type Increment<T extends number> = NextIndexes[T];
-export type IsTuple<T> =
-  IsAny<T> extends true
-  ? false
-  : T extends readonly unknown[]
-  ? number extends T['length']
-  ? false
-  : T['length'] extends number
-  ? T extends readonly [...infer Elements]
-  ? Elements['length'] extends T['length']
-  ? true
-  : false
-  : false
-  : false
-  : false;
-export type TupleLength<T extends readonly any[]> = T['length'];
-type IsUnionImpl<T, U> = T extends any
-  ? [U] extends [T]
-  ? false
-  : true
+type _ArrayLengthWithoutRest<T extends readonly unknown[], Count extends number> =
+  T extends [unknown, ...infer Rest]
+  ? Increment<Count> extends never
+  ? never
+  : _ArrayLengthWithoutRest<Rest, Increment<Count>>
+  : Count;
+export type ArrayLengthWithoutRest<T extends readonly unknown[]> = _ArrayLengthWithoutRest<T, 0>;
+export type ArrayRest<T extends readonly unknown[]> =
+  number extends T['length']
+  ? T[ArrayLengthWithoutRest<T>]
   : never;
-export type IsUnion<T> = IsUnionImpl<T, T>;
 export type IsExact<T, U> =
   [T] extends [U]
   ? [U] extends [T]
@@ -64,12 +46,9 @@ export type IsExact<T, U> =
   : false
   : false;
 
-export type ArrayElementType<T> =
-  IsArray<T> extends true
-  ? T extends readonly (infer U)[]
-  ? U
-  : never
-  : never;
+export type UnionToIntersection<U> =
+  (U extends any ? (x: U) => void : never) extends
+  (x: infer I) => void ? I : never;
 
 export type RecordValueType<T> = T extends Record<PropertyKey, infer V> ? V : never;
 
@@ -106,8 +85,6 @@ export type IsUserType<T> =
   ? false
   : true
   : false;
-
-export type UnusedKeys<TSchema, TPartial extends Partial<TSchema>> = string & Exclude<keyof TSchema, keyof TPartial>;
 
 export type UnusedName<TEntries extends Record<string, any>, TName extends string> = TName extends keyof TEntries ? never : TName;
 
