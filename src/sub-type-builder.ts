@@ -1,8 +1,9 @@
 import { ArrayBuilder } from './array-builder';
 import { InstanceBuilder } from './instance-builder';
 import { RecordBuilder } from './record-builder';
-import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX } from './suffixes';
-import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, FilterByPartial, HasOnlyIndexSignature, IsNonBaseUserType, Keys, RecordValueType, UnionMetadata, Values } from './utility-types';
+import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX, TUPLE_SUFFIX } from './suffixes';
+import { TupleBuilder } from './tuple-builder';
+import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, FilterByPartial, HasOnlyIndexSignature, IsNonBaseUserType, IsTuple, Keys, RecordValueType, UnionMetadata, Values } from './utility-types';
 
 type SubTypeBuilderValue<
   TUnionRegistry extends readonly UnionMetadata<any, any>[],
@@ -126,6 +127,31 @@ type SubTypeBuilderInstance<
       >
   };
 
+type SubTypeBuilderTuple<
+  TUnionRegistry extends readonly UnionMetadata<any, any>[],
+  TBase,
+  TUnion extends TBase,
+  TPartial extends Partial<Record<keyof TUnion, any>>,
+  TFinal,
+  TBuildSuffix extends string
+> = {
+    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as IsTuple<Required<TUnion>[K]> extends true ? `${K}${typeof TUPLE_SUFFIX}` : never]:
+    <V extends Values<FilterByPartial<Required<TUnion>, TPartial>, K>>() =>
+      TupleBuilder<
+        TUnionRegistry,
+        V extends readonly any[] ? V : never,
+        PartialSubTypeBuilder<
+          TUnionRegistry,
+          TBase,
+          TUnion,
+          TPartial & { [P in K]: V },
+          TFinal,
+          TBuildSuffix
+        >,
+        K
+      >
+  };
+
 export type PartialSubTypeBuilder<
   TUnionRegistry extends readonly UnionMetadata<any, any>[],
   TBase,
@@ -140,6 +166,7 @@ export type PartialSubTypeBuilder<
   & SubTypeBuilderRecord<TUnionRegistry, TBase, TUnion, TPartial, TFinal, TBuildSuffix>
   & SubTypeBuilderSubType<TUnionRegistry, TBase, TUnion, TPartial, TFinal, TBuildSuffix>
   & SubTypeBuilderInstance<TUnionRegistry, TBase, TUnion, TPartial, TFinal, TBuildSuffix>
+  & SubTypeBuilderTuple<TUnionRegistry, TBase, TUnion, TPartial, TFinal, TBuildSuffix>
   ;
 
 export type SubTypeBuilder<

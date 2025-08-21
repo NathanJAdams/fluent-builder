@@ -1,7 +1,8 @@
 import { ArrayBuilder } from './array-builder';
 import { InstanceBuilder } from './instance-builder';
 import { SubTypeBuilder } from './sub-type-builder';
-import { AsUnionMetadata, Builder, HasOnlyIndexSignature, IsExact, IsNonBaseUserType, RecordValueType, UnionMetadata, UnusedName } from './utility-types';
+import { TupleBuilder } from './tuple-builder';
+import { AsUnionMetadata, Builder, HasOnlyIndexSignature, IsExact, IsNonBaseUserType, IsTuple, RecordValueType, UnionMetadata, UnusedName } from './utility-types';
 
 type RecordBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> = {
   set: <TName extends string> (name: UnusedName<TEntries, TName>, value: TValue) =>
@@ -95,6 +96,27 @@ type RecordBuilderInstance<TUnionRegistry extends readonly UnionMetadata<any, an
   }
   : object;
 
+type RecordBuilderTuple<TUnionRegistry extends readonly UnionMetadata<any, any>[], TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
+  IsTuple<TValue> extends true
+  ? TValue extends readonly any[]
+  ? {
+    setTuple: <TName extends string>(name: UnusedName<TEntries, TName>) =>
+      TupleBuilder<
+        TUnionRegistry,
+        TValue,
+        PartialRecordBuilder<
+          TUnionRegistry,
+          TEntries & { [K in TName]: TValue },
+          TValue,
+          IsExact<TFinal, TEntries> extends true ? TEntries & { [K in TName]: TValue } : TFinal,
+          TBuildSuffix
+        >,
+        TName
+      >;
+  }
+  : object
+  : object;
+
 export type PartialRecordBuilder<
   TUnionRegistry extends readonly UnionMetadata<any, any>[],
   TEntries extends Record<string, TValue>,
@@ -108,6 +130,7 @@ export type PartialRecordBuilder<
   & RecordBuilderRecord<TUnionRegistry, TEntries, TValue, TFinal, TBuildSuffix>
   & RecordBuilderSubType<TUnionRegistry, TEntries, TValue, TFinal, TBuildSuffix>
   & RecordBuilderInstance<TUnionRegistry, TEntries, TValue, TFinal, TBuildSuffix>
+  & RecordBuilderTuple<TUnionRegistry, TEntries, TValue, TFinal, TBuildSuffix>
   ;
 
 export type RecordBuilder<

@@ -19,7 +19,7 @@ export const fluentBuilder = <T, TUnionRegistry extends readonly UnionMetadata<a
   ? ArrayBuilder<TUnionRegistry, TElement, T, 'Array'>
   : IsTuple<T> extends true
   ? T extends readonly any[]
-  ? TupleBuilder<TUnionRegistry, T, 0, T, 'Tuple'>
+  ? TupleBuilder<TUnionRegistry, T, T, 'Tuple'>
   : never
   : HasOnlyIndexSignature<T> extends true
   ? RecordBuilder<TUnionRegistry, RecordValueType<T>, T, 'Record'>

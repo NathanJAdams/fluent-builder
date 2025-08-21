@@ -1,8 +1,9 @@
 import { ArrayBuilder } from './array-builder';
 import { RecordBuilder } from './record-builder';
 import { SubTypeBuilder } from './sub-type-builder';
-import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX } from './suffixes';
-import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, RecordValueType, UnionMetadata, UnusedKeys } from './utility-types';
+import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX, TUPLE_SUFFIX } from './suffixes';
+import { TupleBuilder } from './tuple-builder';
+import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, HasOnlyIndexSignature, IsNonBaseUserType, IsTuple, RecordValueType, UnionMetadata, UnusedKeys } from './utility-types';
 
 type InstanceBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
   [K in UnusedKeys<TSchema, TPartial>]:
@@ -71,11 +72,28 @@ type InstanceBuilderSubType<TUnionRegistry extends readonly UnionMetadata<any, a
 };
 
 type InstanceBuilderInstance<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
-  [K in UnusedKeys<TSchema, TPartial> as IsNonBaseUserType<TUnionRegistry, Required<TSchema>[K]>  extends true ? `${K}${typeof INSTANCE_SUFFIX}` : never]:
+  [K in UnusedKeys<TSchema, TPartial> as IsNonBaseUserType<TUnionRegistry, Required<TSchema>[K]> extends true ? `${K}${typeof INSTANCE_SUFFIX}` : never]:
   () =>
     InstanceBuilder<
       TUnionRegistry,
       Required<TSchema>[K],
+      PartialInstanceBuilder<
+        TUnionRegistry,
+        TSchema,
+        TPartial & { [P in K]: TSchema[K] },
+        TFinal,
+        TBuildSuffix
+      >,
+      K
+    >
+};
+
+type InstanceBuilderTuple<TUnionRegistry extends readonly UnionMetadata<any, any>[], TSchema, TPartial extends Partial<TSchema>, TFinal, TBuildSuffix extends string> = {
+  [K in UnusedKeys<TSchema, TPartial> as IsTuple<Required<TSchema>[K]> extends true ? `${K}${typeof TUPLE_SUFFIX}` : never]:
+  () =>
+    TupleBuilder<
+      TUnionRegistry,
+      Required<TSchema>[K] extends readonly any[] ? Required<TSchema>[K] : never,
       PartialInstanceBuilder<
         TUnionRegistry,
         TSchema,
@@ -100,6 +118,7 @@ export type PartialInstanceBuilder<
   & InstanceBuilderRecord<TUnionRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
   & InstanceBuilderSubType<TUnionRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
   & InstanceBuilderInstance<TUnionRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
+  & InstanceBuilderTuple<TUnionRegistry, TSchema, TPartial, TFinal, TBuildSuffix>
   ;
 
 export type InstanceBuilder<
