@@ -1,7 +1,7 @@
 import { ArrayBuilder } from './array-builder';
+import { suffixes } from './constants';
 import { InstanceBuilder } from './instance-builder';
 import { RecordBuilder } from './record-builder';
-import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX, TUPLE_SUFFIX } from './suffixes';
 import { TupleBuilder } from './tuple-builder';
 import { ArrayElementType, AsRequiredKeys, AsUnionMetadata, Builder, FilterByPartial, HasOnlyIndexSignature, IsArray, IsNonBaseUserType, IsTuple, Keys, RecordValueType, UnionMetadata, Values } from './utility-types';
 
@@ -33,7 +33,7 @@ type SubTypeBuilderArray<
   TFinal,
   TBuildSuffix extends string
 > = {
-    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as IsArray<TUnion[K]> extends true ? `${K}${typeof ARRAY_SUFFIX}` : never]:
+    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as IsArray<TUnion[K]> extends true ? `${K}${typeof suffixes.array}` : never]:
     <V extends ArrayElementType<Values<FilterByPartial<TUnion, TPartial>, K>>>(value: V) =>
       () => ArrayBuilder<
         TUnionRegistry,
@@ -57,7 +57,7 @@ type SubTypeBuilderRecord<
   TFinal,
   TBuildSuffix extends string
 > = {
-    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as HasOnlyIndexSignature<TUnion[K]> extends true ? `${K}${typeof RECORD_SUFFIX}` : never]:
+    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as HasOnlyIndexSignature<TUnion[K]> extends true ? `${K}${typeof suffixes.record}` : never]:
     <V extends Values<FilterByPartial<TUnion, TPartial>, K>>() =>
       () => RecordBuilder<
         TUnionRegistry,
@@ -82,7 +82,7 @@ type SubTypeBuilderSubType<
   TFinal,
   TBuildSuffix extends string
 > = {
-    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as AsUnionMetadata<TUnionRegistry, TUnion[K]> extends never ? never : `${K}${typeof SUB_TYPE_SUFFIX}`]:
+    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as AsUnionMetadata<TUnionRegistry, TUnion[K]> extends never ? never : `${K}${typeof suffixes.subType}`]:
     <V extends Values<FilterByPartial<TUnion, TPartial>, K>>() =>
       AsUnionMetadata<TUnionRegistry, TUnion[K]> extends UnionMetadata<infer TBaseNested, infer TSubUnionNested>
       ? () => SubTypeBuilder<
@@ -110,7 +110,7 @@ type SubTypeBuilderInstance<
   TFinal,
   TBuildSuffix extends string
 > = {
-    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as IsNonBaseUserType<TUnionRegistry, Required<TUnion>[K]> extends true ? `${K}${typeof INSTANCE_SUFFIX}` : never]:
+    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as IsNonBaseUserType<TUnionRegistry, Required<TUnion>[K]> extends true ? `${K}${typeof suffixes.instance}` : never]:
     <V extends Values<FilterByPartial<Required<TUnion>, TPartial>, K>>() =>
       InstanceBuilder<
         TUnionRegistry,
@@ -135,7 +135,7 @@ type SubTypeBuilderTuple<
   TFinal,
   TBuildSuffix extends string
 > = {
-    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as IsTuple<Required<TUnion>[K]> extends true ? `${K}${typeof TUPLE_SUFFIX}` : never]:
+    [K in string & Exclude<Keys<FilterByPartial<TUnion, TPartial>>, keyof TPartial> as IsTuple<Required<TUnion>[K]> extends true ? `${K}${typeof suffixes.tuple}` : never]:
     <V extends Values<FilterByPartial<Required<TUnion>, TPartial>, K>>() =>
       TupleBuilder<
         TUnionRegistry,

@@ -3,7 +3,7 @@ type IsUnknown<T> = unknown extends T ? (T extends unknown ? true : false) : fal
 type IsEmpty<T> =
   [keyof T] extends [never]
   ? ([T] extends [{}] ? true : false)
-  : false;
+  : (T extends readonly [] ? true : false);
 type Primitive =
   | string
   | number
@@ -52,6 +52,12 @@ export type IsTuple<T> =
   : false
   : false;
 export type TupleLength<T extends readonly any[]> = T['length'];
+type IsUnionImpl<T, U> = T extends any
+  ? [U] extends [T]
+    ? false
+    : true
+  : never;
+export type IsUnion<T> = IsUnionImpl<T, T>;
 export type IsExact<T, U> =
   [T] extends [U]
   ? [U] extends [T]
@@ -161,3 +167,7 @@ export type Builder<TBuilt, TBuildSuffix extends string> =
   & {
     [K in `build${Capitalize<TBuildSuffix>}`]: () => Clean<TBuilt>;
   };
+
+export type HasError<TError extends string> = {
+  error: (errorMessage: string extends TError ? never : TError) => never;
+};

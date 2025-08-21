@@ -1,4 +1,4 @@
-import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX, TUPLE_SUFFIX } from './suffixes';
+import { suffixes } from './constants';
 
 type AccumulatedType = 'instance' | 'array' | 'record' | 'tuple';
 
@@ -46,13 +46,13 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
           throw Error(`Cannot call a value function on ${accumulatedType} type`);
         }
       }
-      const nestedAccumulatedType: AccumulatedType | undefined = property.endsWith(ARRAY_SUFFIX)
+      const nestedAccumulatedType: AccumulatedType | undefined = property.endsWith(suffixes.array)
         ? 'array'
-        : property.endsWith(RECORD_SUFFIX)
+        : property.endsWith(suffixes.record)
           ? 'record'
-          : property.endsWith(TUPLE_SUFFIX)
+          : property.endsWith(suffixes.tuple)
             ? 'tuple'
-            : (property.endsWith(INSTANCE_SUFFIX) || property.endsWith(SUB_TYPE_SUFFIX))
+            : (property.endsWith(suffixes.instance) || property.endsWith(suffixes.subType))
               ? 'instance'
               : undefined;
       const nestedAccumulatedValues = (nestedAccumulatedType === undefined)
@@ -121,17 +121,17 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
 };
 
 const toKey = (property: string): string => {
-  if (property.endsWith(ARRAY_SUFFIX)) {
-    return stripSuffix(property, ARRAY_SUFFIX);
+  if (property.endsWith(suffixes.array)) {
+    return stripSuffix(property, suffixes.array);
   }
-  if (property.endsWith(RECORD_SUFFIX)) {
-    return stripSuffix(property, RECORD_SUFFIX);
+  if (property.endsWith(suffixes.record)) {
+    return stripSuffix(property, suffixes.record);
   }
-  if (property.endsWith(SUB_TYPE_SUFFIX)) {
-    return stripSuffix(property, SUB_TYPE_SUFFIX);
+  if (property.endsWith(suffixes.subType)) {
+    return stripSuffix(property, suffixes.subType);
   }
-  if (property.endsWith(INSTANCE_SUFFIX)) {
-    return stripSuffix(property, INSTANCE_SUFFIX);
+  if (property.endsWith(suffixes.instance)) {
+    return stripSuffix(property, suffixes.instance);
   }
   return property;
 };

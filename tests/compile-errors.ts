@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { fluentBuilder, unionRegistryBuilder } from '../src';
 import { AlteredRootStructure, AlteredSubA, AlteredSubB, DuplicateRootStructure, DuplicateSubA, DuplicateSubB, Employee, Example, Human, Root, Root2, Root3, SubA, SubA2, SubA3, SubB, SubB2, SubB3 } from './test-types';
+import { errorMessages } from '../src/constants';
 
 describe('compile errors', () => {
   describe('bad union metadata', () => {
@@ -41,64 +42,43 @@ describe('compile errors', () => {
   });
   describe('unsupported built types', () => {
     test('never is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <never>();
+      fluentBuilder<never>().error(errorMessages.notBuildable);
     });
     test('unknown is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <unknown>();
+      fluentBuilder<unknown>().error(errorMessages.notBuildable);
     });
     test('any is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <any>();
+      fluentBuilder<any>().error(errorMessages.notBuildable);
     });
     test('null is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <null>();
+      fluentBuilder<null>().error(errorMessages.notBuildable);
     });
     test('undefined is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <undefined>();
+      fluentBuilder<undefined>().error(errorMessages.notBuildable);
     });
     test('string is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <string>();
+      fluentBuilder<string>().error(errorMessages.notBuildable);
     });
     test('number is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <number>();
+      fluentBuilder<number>().error(errorMessages.notBuildable);
     });
     test('bigint is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <bigint>();
+      fluentBuilder<bigint>().error(errorMessages.notBuildable);
     });
     test('symbol is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <symbol>();
+      fluentBuilder<symbol>().error(errorMessages.notBuildable);
     });
     test('function is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <Function>();
+      fluentBuilder<Function>().error(errorMessages.notBuildable);
     });
     test('object is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <object>();
+      fluentBuilder<object>().error(errorMessages.notBuildable);
     });
     test('empty type is not supported', () => {
-      // @ts-expect-error
-      fluentBuilder
-        <{}>();
+      fluentBuilder<{}>().error(errorMessages.notBuildable);
+    });
+    test('empty type is not supported', () => {
+      fluentBuilder<[]>().error(errorMessages.notBuildable);
     });
   });
   describe('fluent-builder', () => {
