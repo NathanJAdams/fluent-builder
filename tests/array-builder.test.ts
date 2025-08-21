@@ -20,13 +20,13 @@ describe('array-builder', () => {
     test('arrays', () => {
       const values = fluentBuilder<Employee[][]>()
         .pushArray()
-        .pushInstance().name('Tim').age(31).alive(true).buildElement()
-        .pushInstance().name('Ann').age(48).alive(true).buildElement()
-        .buildArray()
+        .pushObject().name('Tim').age(31).alive(true).buildElement()
+        .pushObject().name('Ann').age(48).alive(true).buildElement()
+        .buildElement()
         .pushArray()
-        .pushInstance().name('Timmy').age(1).alive(true).buildElement()
-        .pushInstance().name('Annie').age(8).alive(true).buildElement()
-        .buildArray()
+        .pushObject().name('Timmy').age(1).alive(true).buildElement()
+        .pushObject().name('Annie').age(8).alive(true).buildElement()
+        .buildElement()
         .buildArray();
       expect(Array.isArray(values)).toBe(true);
       expect(values.length).toBe(2);
@@ -44,11 +44,11 @@ describe('array-builder', () => {
     test('record', () => {
       const values = fluentBuilder<Record<string, Dog>[]>()
         .pushRecord()
-        .setInstance('Tim').food('chicken').kind('dog').buildTim()
-        .buildRecord()
+        .setObject('Tim').food('chicken').kind('dog').buildTim()
+        .buildElement()
         .pushRecord()
-        .setInstance('Jenny').food('pork').kind('dog').buildJenny()
-        .buildRecord()
+        .setObject('Jenny').food('pork').kind('dog').buildJenny()
+        .buildElement()
         .buildArray();
       expect(Array.isArray(values)).toBe(true);
       expect(values.length).toBe(2);
@@ -57,8 +57,8 @@ describe('array-builder', () => {
     });
     test('instance', () => {
       const values = fluentBuilder<Employee[]>()
-        .pushInstance().name('Tim').age(31).alive(true).buildElement()
-        .pushInstance().name('Ann').age(48).alive(true).buildElement()
+        .pushObject().name('Tim').age(31).alive(true).buildElement()
+        .pushObject().name('Ann').age(48).alive(true).buildElement()
         .build();
       expect(Array.isArray(values)).toBe(true);
       expect(values.length).toBe(2);

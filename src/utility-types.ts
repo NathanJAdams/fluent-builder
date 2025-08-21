@@ -26,7 +26,6 @@ export type IsValid<T> =
   : IsEmpty<T> extends true
   ? false
   : true;
-
 export type IsArray<T> =
   IsAny<T> extends true
   ? false
@@ -35,8 +34,8 @@ export type IsArray<T> =
   ? true
   : false
   : false;
-type NextTupleIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, never];
-export type NextTupleIndex<T extends number> = NextTupleIndexes[T];
+type NextIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, never];
+export type Increment<T extends number> = NextIndexes[T];
 export type IsTuple<T> =
   IsAny<T> extends true
   ? false
@@ -54,8 +53,8 @@ export type IsTuple<T> =
 export type TupleLength<T extends readonly any[]> = T['length'];
 type IsUnionImpl<T, U> = T extends any
   ? [U] extends [T]
-    ? false
-    : true
+  ? false
+  : true
   : never;
 export type IsUnion<T> = IsUnionImpl<T, T>;
 export type IsExact<T, U> =
@@ -97,17 +96,15 @@ export type HasOnlyIndexSignature<T> =
   : false
   : false;
 
-export type IsNonBaseUserType<TUnionRegistry extends readonly UnionMetadata<any, any>[], T> =
-  AsUnionMetadata<TUnionRegistry, T> extends never
-  ? T extends object
+export type IsUserType<T> =
+  T extends object
   ? keyof T extends never
   ? false
-  : T extends Function | any[]
+  : T extends any[]
   ? false
   : HasOnlyIndexSignature<T> extends true
   ? false
   : true
-  : false
   : false;
 
 export type UnusedKeys<TSchema, TPartial extends Partial<TSchema>> = string & Exclude<keyof TSchema, keyof TPartial>;
@@ -131,28 +128,6 @@ export type AsRequiredKeys<TUnion, TPartial extends Partial<TUnion>> =
   TUnion extends any
   ? IsPartialSubset<TUnion, TPartial> extends true
   ? Exclude<RequiredKeys<TUnion>, keyof TPartial>
-  : never
-  : never;
-
-export type UnionMetadata<
-  TBase,
-  TUnion extends TBase
-> = {
-  __base: TBase;
-  __union: TUnion;
-};
-
-export type AsUnionMetadata<
-  TUnionRegistry extends readonly UnionMetadata<any, any>[],
-  TType
-> =
-  TUnionRegistry extends readonly [infer Head, ...infer Tail]
-  ? Head extends UnionMetadata<infer TBase, infer TUnion>
-  ? IsExact<TType, TBase> extends true
-  ? UnionMetadata<TBase, TUnion>
-  : Tail extends readonly UnionMetadata<any, any>[]
-  ? AsUnionMetadata<Tail, TType>
-  : never
   : never
   : never;
 

@@ -9,8 +9,7 @@ export const errorMessages = {
 
 export const suffixes = {
   array: 'Array',
-  instance: 'Instance',
+  object: 'Object',
   record: 'Record',
-  subType: 'SubType',
   tuple: 'Tuple',
 } as const;

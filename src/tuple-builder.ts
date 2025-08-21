@@ -1,104 +1,69 @@
 import { ArrayBuilder } from './array-builder';
-import { InstanceBuilder } from './instance-builder';
+import { ObjectBuilder } from './object-builder';
 import { RecordBuilder } from './record-builder';
-import { SubTypeBuilder } from './sub-type-builder';
-import { ArrayElementType, AsUnionMetadata, Builder, HasOnlyIndexSignature, IsArray, IsExact, IsNonBaseUserType, IsTuple, NextTupleIndex, RecordValueType, TupleLength, UnionMetadata } from './utility-types';
+import { ArrayElementType, Builder, HasOnlyIndexSignature, Increment, IsArray, IsExact, IsTuple, IsUserType, RecordValueType, TupleLength } from './utility-types';
 
-type TupleBuilderValue<TUnionRegistry extends readonly UnionMetadata<any, any>[], TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> = {
-  [K in TIndex as `index${K}`]: (value: TTuple[TIndex]) => IndexedTupleBuilder<TUnionRegistry, TTuple, NextTupleIndex<TIndex>, TFinal, TBuildSuffix>;
+type TupleBuilderValue<TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> = {
+  [K in TIndex as `index${K}`]: (value: TTuple[TIndex]) => IndexedTupleBuilder<TTuple, Increment<TIndex>, TFinal, TBuildSuffix>;
 };
 
-type TupleBuilderArray<TUnionRegistry extends readonly UnionMetadata<any, any>[], TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
+type TupleBuilderArray<TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
   IsArray<TTuple[TIndex]> extends true
   ? {
     [K in TIndex as `index${K}Array`]: () =>
       ArrayBuilder<
-        TUnionRegistry,
         ArrayElementType<TTuple[TIndex]>,
-        IndexedTupleBuilder<TUnionRegistry, TTuple, NextTupleIndex<TIndex>, TFinal, TBuildSuffix>,
+        IndexedTupleBuilder<TTuple, Increment<TIndex>, TFinal, TBuildSuffix>,
         `Index${K}`
       >;
   }
   : object;
 
-type TupleBuilderRecord<TUnionRegistry extends readonly UnionMetadata<any, any>[], TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
+type TupleBuilderObject<TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
+  IsUserType<TTuple[TIndex]> extends true
+  ? {
+    [K in TIndex as `index${K}Object`]: () =>
+      ObjectBuilder<
+        TTuple[TIndex],
+        IndexedTupleBuilder<TTuple, Increment<TIndex>, TFinal, TBuildSuffix>,
+        `Index${K}`
+      >;
+  }
+  : object;
+
+type TupleBuilderRecord<TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
   HasOnlyIndexSignature<TTuple[TIndex]> extends true
   ? {
     [K in TIndex as `index${K}Record`]: () =>
       RecordBuilder<
-        TUnionRegistry,
         RecordValueType<TTuple[TIndex]>,
-        IndexedTupleBuilder<TUnionRegistry, TTuple, NextTupleIndex<TIndex>, TFinal, TBuildSuffix>,
+        IndexedTupleBuilder<TTuple, Increment<TIndex>, TFinal, TBuildSuffix>,
         `Index${K}`
       >;
   }
   : object;
 
-type TupleBuilderSubType<TUnionRegistry extends readonly UnionMetadata<any, any>[], TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
-  AsUnionMetadata<TUnionRegistry, TTuple[TIndex]> extends infer TMetadata
-  ? [TMetadata] extends [never]
-  ? object
-  : TMetadata extends UnionMetadata<infer TBase, infer TUnion>
-  ? {
-    [K in TIndex as `index${K}SubType`]: () =>
-      SubTypeBuilder<
-        TUnionRegistry,
-        TBase,
-        TUnion,
-        IndexedTupleBuilder<TUnionRegistry, TTuple, NextTupleIndex<TIndex>, TFinal, TBuildSuffix>,
-        `Index${K}`
-      >;
-  }
-  : object
-  : object;
-
-type TupleBuilderInstance<TUnionRegistry extends readonly UnionMetadata<any, any>[], TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
-  IsNonBaseUserType<TUnionRegistry, TTuple[TIndex]> extends true
-  ? {
-    [K in TIndex as `index${K}Instance`]: () =>
-      InstanceBuilder<
-        TUnionRegistry,
-        TTuple[TIndex],
-        IndexedTupleBuilder<TUnionRegistry, TTuple, NextTupleIndex<TIndex>, TFinal, TBuildSuffix>,
-        `Index${K}`
-      >;
-  }
-  : object;
-
-type TupleBuilderTuple<TUnionRegistry extends readonly UnionMetadata<any, any>[], TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
+type TupleBuilderTuple<TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
   IsTuple<TTuple[TIndex]> extends true
   ? {
     [K in TIndex as `index${K}Tuple`]: () =>
       TupleBuilder<
-        TUnionRegistry,
         TTuple[TIndex],
-        IndexedTupleBuilder<TUnionRegistry, TTuple, NextTupleIndex<TIndex>, TFinal, TBuildSuffix>,
+        IndexedTupleBuilder<TTuple, Increment<TIndex>, TFinal, TBuildSuffix>,
         `Index${K}`
       >;
   }
   : object;
 
-export type IndexedTupleBuilder<
-  TUnionRegistry extends readonly UnionMetadata<any, any>[],
-  TTuple extends readonly any[],
-  TIndex extends number,
-  TFinal,
-  TBuildSuffix extends string
-> =
+export type IndexedTupleBuilder<TTuple extends readonly any[], TIndex extends number, TFinal, TBuildSuffix extends string> =
   IsExact<TIndex, TupleLength<TTuple>> extends true
   ? Builder<TFinal, TBuildSuffix>
   : (
-    & TupleBuilderValue<TUnionRegistry, TTuple, TIndex, TFinal, TBuildSuffix>
-    & TupleBuilderArray<TUnionRegistry, TTuple, TIndex, TFinal, TBuildSuffix>
-    & TupleBuilderRecord<TUnionRegistry, TTuple, TIndex, TFinal, TBuildSuffix>
-    & TupleBuilderSubType<TUnionRegistry, TTuple, TIndex, TFinal, TBuildSuffix>
-    & TupleBuilderInstance<TUnionRegistry, TTuple, TIndex, TFinal, TBuildSuffix>
-    & TupleBuilderTuple<TUnionRegistry, TTuple, TIndex, TFinal, TBuildSuffix>
+    & TupleBuilderValue<TTuple, TIndex, TFinal, TBuildSuffix>
+    & TupleBuilderArray<TTuple, TIndex, TFinal, TBuildSuffix>
+    & TupleBuilderObject<TTuple, TIndex, TFinal, TBuildSuffix>
+    & TupleBuilderRecord<TTuple, TIndex, TFinal, TBuildSuffix>
+    & TupleBuilderTuple<TTuple, TIndex, TFinal, TBuildSuffix>
   );
 
-export type TupleBuilder<
-  TUnionRegistry extends readonly UnionMetadata<any, any>[],
-  TTuple extends readonly any[],
-  TFinal,
-  TBuildSuffix extends string
-> = IndexedTupleBuilder<TUnionRegistry, TTuple, 0, TFinal, TBuildSuffix>;
+export type TupleBuilder<TTuple extends readonly any[], TFinal, TBuildSuffix extends string> = IndexedTupleBuilder<TTuple, 0, TFinal, TBuildSuffix>;

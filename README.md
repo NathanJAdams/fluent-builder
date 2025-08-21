@@ -1,15 +1,15 @@
 # ts-fluent-builder
 
-A powerful TypeScript library for building any complex type, 100% fluent, arbitrarily nested, zero/de minimis config, with full IntelliSense support and compile-time type & data safety mechanisms.
+A powerful TypeScript library for building any complex type, 100% fluent, arbitrarily nested, zero config, with full IntelliSense support and compile-time type & data safety mechanisms.
 
 ## Features
 
+- **Simple & Powerful**: A single function to build any type
 - **Type-Safe**: Full TypeScript support with compile-time validation
 - **Data-Safe**: Prevents overwriting data or building incomplete objects
 - **Fluent API**: Intuitive method chaining for object construction
 - **IntelliSense**: Rich autocomplete and type hints in your IDE
 - **Build Any Complex Type**: Support for user-defined types & interfaces, arrays, records, unions, tuples
-- **Union Registry**: Advanced support for polymorphic object construction
 - **Flexible**: Works with any valid TypeScript type structure
 
 ## Installation
@@ -45,7 +45,7 @@ const user = fluentBuilder<User>()
   .name('John Doe')
   .email('john@example.com')
   .addressesArray()
-    .pushInstance()
+    .pushObject()
       .street('123 Main St')
       .city('New York')
       .country('USA')
@@ -59,11 +59,11 @@ const user = fluentBuilder<User>()
   .build();
 ```
 
-## Core Concepts
+## Core Concept
 
 ### Fluent Builder
 
-Build any complex type in any combination at arbitrary depth (subject to compiler limitations):
+ts-fluent-builder exports a single function: `fluentBuilder<T>()` which can be used to build any complex type in any combination at arbitrary depth (subject to compiler limitations):
 
 ```typescript
 // objects
@@ -75,7 +75,7 @@ interface Person {
 const person = fluentBuilder<Person>()
   .name('Alice')
   .age(30)
-  .addressInstance()
+  .addressObject()
     .street('123 Main St')
     .city('Springfield')
     .country('USA')
@@ -103,12 +103,12 @@ interface TodoList {
 
 const todoList = fluentBuilder<TodoList>()
   .itemsArray()
-    .pushInstance()
+    .pushObject()
       .id(1)
       .title('Buy groceries')
       .completed(false)
       .build()
-    .pushInstance()
+    .pushObject()
       .id(2)
       .title('Walk the dog')
       .completed(true)
@@ -131,7 +131,7 @@ const config = fluentBuilder<Record<string, Config>>()
     timeout: 5000,
     enabled: true
   })
-  .setInstance('development')
+  .setObject('development')
     .url('https://dev.api.example.com')
     .timeout(10000)
     .enabled(false)
@@ -162,19 +162,13 @@ interface Rectangle extends Shape {
 
 type ShapeUnion = Circle | Rectangle;
 
-// Create union registry
-const registry = unionRegistryBuilder()
-  .register<Shape, ShapeUnion>()
-  .build();
-
-// Use as the optional second generic parameter when building
-const shapes = fluentBuilder<Shape[], typeof registry>()
-  .pushSubType()
+const shapes = fluentBuilder<Shape[]>()
+  .pushObject()
     .type('circle')
-    .area(78.54)
+    .area(Math.PI * 5 * 5)
     .radius(5)
     .buildElement()
-  .pushSubType()
+  .pushObject()
     .type('rectangle')
     .area(20)
     .width(4)
@@ -195,7 +189,7 @@ const falsyValues = fluentBuilder<[boolean, number, bigint, string]>()
 
 ## API Reference
 
-### Core Functions
+### Core Function
 
 #### `fluentBuilder<T>()`
 
@@ -204,21 +198,15 @@ Creates a new fluent builder for the specified type.
 **Parameters:**
 - `T`: The TypeScript type to build
 
-**Returns:** A builder instance appropriate for the type (InstanceBuilder, ArrayBuilder, or RecordBuilder)
-
-#### `unionRegistryBuilder()`
-
-Creates a new union registry builder for handling polymorphic types.
-
-**Returns:** `UnionRegistryBuilder` instance
+**Returns:** A builder instance with functions ready to build the type
 
 ### Builder Methods
 
-All builders provide these common patterns:
+There are a few common patterns used:
 
 #### Value Assignment
 ```typescript
-.propertyName(value)    // Set a property value
+.propertyName(value)    // Set a property value on an object
 .push(value)            // Append to an array
 .set(key, value)        // Set a key value entry on a record
 .indexN(value)          // Set indexed value on a tuple
@@ -226,22 +214,18 @@ All builders provide these common patterns:
 
 #### Nested Builders
 ```typescript
-.propertyNameInstance() // Start building a nested object
 .propertyNameArray()    // Start building a nested array  
+.propertyNameObject()   // Start building a nested object
 .propertyNameRecord()   // Start building a nested record
-.propertyNameSubType()  // Start building a nested sub-type
 .propertyNameTuple()    // Start building a nested tuple
 
-.pushInstance()         // Start building a nested object to push onto the array
 .pushArray()            // Start building a nested array to push onto the array
+.pushObject()           // Start building a nested object to push onto the array
 .pushRecord()           // Start building a nested record to push onto the array
-.pushSubType()          // Start building a nested sub-type to push onto the array
-.pushTuple()            // Start building a nested tuple to push onto the array
 
-.setInstance(name)      // Start building a nested object to set on the record
 .setArray(name)         // Start building a nested array to set on the record
+.setObject(name)        // Start building a nested sub-type to set on the record
 .setRecord(name)        // Start building a nested record to set on the record
-.setSubType(name)       // Start building a nested sub-type to set on the record
 .setTuple(name)         // Start building a nested tuple to set on the record
 ```
 
@@ -252,11 +236,9 @@ All builders provide these common patterns:
 
 // all build...() functions are aliases of build() and can be used as hints to the developer, eg:
 .buildRecordName()
-.buildElement()
-.buildInstance()
 .buildArray()
+.buildObject()
 .buildRecord()
-.buildSubType()
 .buildTuple()
 ```
 
@@ -286,16 +268,16 @@ interface Employee {
 const company = fluentBuilder<Company>()
   .name('TechCorp')
   .departmentsArray()
-    .pushInstance()
+    .pushObject()
       .name('Engineering')
       .budget(500000)
       .employeesArray()
-        .pushInstance()
+        .pushObject()
           .id(1)
           .name('John Doe')
           .role('Senior Developer')
           .build()
-        .pushInstance()
+        .pushObject()
           .id(2)
           .name('Jane Smith')
           .role('Tech Lead')
@@ -345,6 +327,13 @@ const fullUser = fluentBuilder<User>()
 ts-fluent-builder prevents common type and data mistakes at compile time:
 
 ```typescript
+interface User {
+  id: number;
+  name: string;
+  email?: string;  // optional
+  phone?: string;  // optional
+}
+
 // ❌ This won't compile - missing required property
 const invalid = fluentBuilder<User>()
   .name('John')
@@ -357,15 +346,15 @@ const wrongType = fluentBuilder<User>()
   .build();
 
 // ❌ This won't compile - duplicate property
-const duplicate = fluentBuilder<User>()
+const duplicateProperty = fluentBuilder<User>()
   .id(1)
   .id(2)  // can't set id twice
   .build();
 
 // ❌ This won't compile - duplicate record key
-const duplicateKey = fluentBuilder<Record<string, Config>>()
-  .set('production', config1)
-  .set('production', config2)  // can't set same key twice
+const duplicateKey = fluentBuilder<Record<string, boolean>>()
+  .set('production', true)
+  .set('production', false)  // can't set same key twice
   .build();
 ```
 

@@ -1,3 +1,7 @@
+import { IsUserType } from "../src/utility-types";
+
+export type NonEmptyArray<T> = [T, ...T[]];
+
 export type House = {
   a?: boolean;
   rooms: Room[];
@@ -6,19 +10,17 @@ export type Room = {
   furniture: RoomObject[];
   windows?: Record<string, RoomWindow>;
 };
-export type RoomObject = {
-  kind: string;
-};
-export type Chair = RoomObject & {
+export type Chair = {
   kind: 'chair';
   legs: number;
 };
-export type Table = RoomObject & {
+export type Table = {
   kind: 'table';
   width: number;
   breadth: number;
   height: number;
 };
+export type RoomObject = Chair | Table;
 export type RoomWindow = {
   width: number;
   height: number;
@@ -48,30 +50,26 @@ export type Nested5 = {
   xyz: string;
 };
 
-export type Animal = {
-  kind: string;
-};
-export type Dog = Animal & {
+export type Dog = {
   kind: 'dog';
   food: string;
 };
-export type Human = Animal & {
+export type Human = {
   kind: 'human';
   age: number;
   pets?: Animal[];
   grandchildren?: Record<string, Child[]>;
 };
-export type Child = Animal & {
+export type Child = {
   name: string;
 };
+export type Animal = Dog | Human | Child;
 
 export type Employee = {
   name: string;
   age: number;
   alive: boolean;
 };
-
-
 
 export type Root = {
   kind: string;
@@ -87,9 +85,9 @@ export type SubB = Root & {
   bx?: string;
 };
 export type SubBB = Root & {
-  kind: 'b';
+  kind: 'bb';
   b: boolean;
-  by?: boolean;
+  cy?: boolean;
 };
 export type Root2 = {
   kind2: string;
@@ -135,3 +133,14 @@ export type AlteredSubA = AlteredRootStructure & {
 export type AlteredSubB = AlteredRootStructure & {
   kind: 'duplicateB';
 };
+
+
+export type UnionMemberNormal = {
+  string: string;
+};
+export type UnionMemberWithNonEmptyArray = {
+  numbersNonEmpty: NonEmptyArray<number>;
+  numbersNormal: Array<number>;
+  numbersTuple: [number, number, number];
+};
+export type Union = UnionMemberNormal | UnionMemberWithNonEmptyArray;

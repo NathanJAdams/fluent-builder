@@ -1,20 +1,15 @@
 import { describe, test, expect } from 'vitest';
 
-import { fluentBuilder, unionRegistryBuilder } from '../src';
+import { fluentBuilder } from '../src';
 import { Animal, Dog, Employee, Human } from './test-types';
-
-const unionRegistry = unionRegistryBuilder()
-  .register<Animal, Dog | Human>()
-  .build();
-type MyunionRegistry = typeof unionRegistry;
 
 describe('record-builder', () => {
   describe('building', () => {
     test('builds a record type with literal entries', () => {
       const people = fluentBuilder<Record<string, Employee>>()
-        .setInstance('Employee1').name('Jim').age(42).alive(true).buildEmployee1()
-        .setInstance('Employee2').name('Alice').age(39).alive(true).buildEmployee2()
-        .setInstance('Employee3').name('Edna').age(102).alive(false).buildEmployee3()
+        .setObject('Employee1').name('Jim').age(42).alive(true).buildEmployee1()
+        .setObject('Employee2').name('Alice').age(39).alive(true).buildEmployee2()
+        .setObject('Employee3').name('Edna').age(102).alive(false).buildEmployee3()
         .buildRecord();
       expect(people.Employee1.age).toBe(42);
       expect(people.Employee1.alive).toBe(true);
@@ -24,9 +19,9 @@ describe('record-builder', () => {
       expect(people.Employee3.alive).toBe(false);
     });
     test('builds sub types', () => {
-      const animals = fluentBuilder<Record<string, Animal>, MyunionRegistry>()
-        .setSubType('Sparky').kind('dog').food('sausage').buildSparky()
-        .setSubType('Jim').kind('human').age(55).grandchildren(undefined).pets(undefined).buildJim()
+      const animals = fluentBuilder<Record<string, Dog | Human>>()
+        .setObject('Sparky').kind('dog').food('sausage').buildSparky()
+        .setObject('Jim').kind('human').age(55).grandchildren(undefined).pets(undefined).buildJim()
         .buildRecord();
       expect(animals.Jim.kind).toBe('human');
       expect(animals.Sparky.kind).toBe('dog');
@@ -34,10 +29,10 @@ describe('record-builder', () => {
     test('builds record of array', () => {
       const tom = fluentBuilder<Record<string, Human[]>>()
         .setArray('one')
-        .pushInstance()
+        .pushObject()
         .grandchildrenRecord()
         .setArray('Phil')
-        .pushInstance().kind('fgjsdfd').name('nfkdsbfkd').buildElement()
+        .pushObject().name('Timmy').buildElement()
         .buildPhil()
         .buildGrandchildren()
         .age(45)

@@ -1,45 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { fluentBuilder, unionRegistryBuilder } from '../src';
-import { AlteredRootStructure, AlteredSubA, AlteredSubB, DuplicateRootStructure, DuplicateSubA, DuplicateSubB, Employee, Example, Human, Root, Root2, Root3, SubA, SubA2, SubA3, SubB, SubB2, SubB3 } from './test-types';
+import { fluentBuilder } from '../src';
+import { Employee, Example, Human } from './test-types';
 import { errorMessages } from '../src/constants';
 
 describe('compile errors', () => {
-  describe('bad union metadata', () => {
-    test('cannot add the same sub type metadata type twice even after adding others in between', () => {
-      unionRegistryBuilder()
-        .register<Root, SubA | SubB>()
-        .register<Root2, SubA2 | SubB2>()
-        .register<Root, SubA | SubB>().
-        // @ts-expect-error
-        register
-        <Root3, SubA3 | SubB3>()
-        .build();
-    });
-    test('cannot add a base type if it has the exact same structure as one already added, no way to distinguish which type to use', () => {
-      unionRegistryBuilder()
-        .register<Root, SubA | SubB>()
-        .register<DuplicateRootStructure, DuplicateSubA | DuplicateSubB>().
-        // @ts-expect-error
-        register
-        <Root3, SubA3 | SubB3>()
-        .build();
-    });
-    test('can add a base type even if it has the same discriminator as long as the structure is different to ones previously added', () => {
-      unionRegistryBuilder()
-        .register<Root, SubA | SubB>()
-        .register<AlteredRootStructure, AlteredSubA | AlteredSubB>()
-        .register<Root3, SubA3 | SubB3>()
-        .build();
-    });
-    test('cannot add a sub type if it does not extend the base type', () => {
-      unionRegistryBuilder()
-        .register<Root,
-          // @ts-expect-error
-          SubA2
-        >()
-        .build();
-    });
-  });
   describe('unsupported built types', () => {
     test('never is not supported', () => {
       fluentBuilder<never>().error(errorMessages.notBuildable);
@@ -119,26 +83,26 @@ describe('compile errors', () => {
     });
     test('cannot add the same record twice even after other records have been added in between', () => {
       fluentBuilder<Record<string, Human>>()
-        .setInstance('Olive')
+        .setObject('Olive')
         .age(70)
         .kind('human')
         .buildOlive()
-        .setInstance('Frederick')
+        .setObject('Frederick')
         .age(21)
         .kind('human')
         .buildFrederick()
-        .setInstance('Ann')
+        .setObject('Ann')
         .age(70)
         .kind('human')
         .buildAnn()
-        .setInstance(
+        .setObject(
           // @ts-expect-error
           'Frederick'
         );
     });
     test('build function is not available until all non-optional fields have been set', () => {
       fluentBuilder<Record<string, Employee>>()
-        .setInstance('Fred')
+        .setObject('Fred')
         .
         // @ts-expect-error
         build
@@ -146,7 +110,7 @@ describe('compile errors', () => {
     });
     test('cannot use the same function twice even if other functions have been called in between', () => {
       fluentBuilder<Record<string, Employee>>()
-        .setInstance('John')
+        .setObject('John')
         .age(1)
         .alive(true)
         .

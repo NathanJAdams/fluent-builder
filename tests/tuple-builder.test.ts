@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest';
 
-import { fluentBuilder } from '../src';
+import { fluentBuilder, unionRegistryBuilder } from '../src';
+import { Union, UnionMemberNormal, UnionMemberWithNonEmptyArray } from './test-types';
 
 describe('tuple-builder', () => {
   describe('building', () => {
@@ -16,3 +17,4 @@ describe('tuple-builder', () => {
     });
   });
 });
+
