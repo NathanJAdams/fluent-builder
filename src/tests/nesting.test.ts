@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { fluentBuilder } from '../src';
+
+import { fluentBuilder } from '../api';
 import { House, Nested1 } from './test-types';
 
 describe('nesting', () => {
@@ -31,5 +32,7 @@ describe('nesting', () => {
       .buildElement()
       .buildRooms()
       .build();
+    expect(house.a).toBeUndefined();
+    expect(house.rooms.length).toBe(1);
   });
 });

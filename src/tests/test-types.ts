@@ -1,5 +1,3 @@
-import { IsUserType } from "../src/utility-types";
-
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export type House = {

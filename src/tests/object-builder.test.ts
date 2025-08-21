@@ -1,6 +1,6 @@
-import { describe, test, expect } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
-import { fluentBuilder } from '../src';
+import { fluentBuilder } from '../api';
 import { Example, SubA, SubB, SubBB, UnionMemberWithNonEmptyArray } from './test-types';
 
 describe('object-builder', () => {
@@ -49,7 +49,7 @@ describe('object-builder', () => {
         .numbersNormalArray().push(123).buildNumbersNormal()
         .numbersTupleArray().index0(7483).index1(7584).index2(654).buildNumbersTuple()
         .buildObject();
-      expect(values.numbersNonEmpty.length).toBe(0);
+      expect(values.numbersNonEmpty.length).toBe(2);
       expect(values.numbersNormal.length).toBe(1);
       expect(values.numbersTuple.length).toBe(3);
     });

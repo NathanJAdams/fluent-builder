@@ -1,7 +1,7 @@
-import { describe, test, expect } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
-import { fluentBuilder } from '../src';
-import type { Employee, Dog } from './test-types';
+import { fluentBuilder } from '../api';
+import type { Dog, Employee } from './test-types';
 
 describe('array-builder', () => {
   describe('building', () => {

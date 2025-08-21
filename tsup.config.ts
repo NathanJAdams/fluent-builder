@@ -6,7 +6,7 @@ export default defineConfig({
     entry: 'src/index.ts',
   },
   entry: {
-    'index': 'src/index.ts',
+    index: 'src/index.ts',
   },
   format: ['cjs', 'esm'],
   outDir: 'dist',

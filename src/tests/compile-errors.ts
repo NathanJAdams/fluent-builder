@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { fluentBuilder } from '../src';
+
+import { fluentBuilder } from '../api';
+import { errorMessages } from '../constants';
 import { Employee, Example, Human } from './test-types';
-import { errorMessages } from '../src/constants';
 
 describe('compile errors', () => {
   describe('unsupported built types', () => {

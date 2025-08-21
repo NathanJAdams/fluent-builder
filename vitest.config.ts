@@ -4,10 +4,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['tests/**/*.test.ts'],
+    include: ['src/tests/**/*.test.ts'],
     typecheck: {
-      include: ['src/**/*.ts', 'tests/**/*.ts'],
+      include: ['src/**/*ts'],
       enabled: true,
     },
   },
-})
+});

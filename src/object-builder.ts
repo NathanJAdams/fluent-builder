@@ -4,7 +4,7 @@ import { RecordBuilder } from './record-builder';
 import { AsRequiredKeys, Builder, FilterByPartial, HasOnlyIndexSignature, IsUserType, Keys, RecordValueType, Values } from './utility-types';
 
 type ObjectBuilderValue<T, TPartial extends Partial<Record<keyof T, any>>, TFinal, TBuildSuffix extends string> = {
-  [K in string & Exclude<Keys<T>, keyof TPartial>]:
+  [K in string & Exclude<Keys<FilterByPartial<T, TPartial>>, keyof TPartial>]:
   <V extends Values<FilterByPartial<T, TPartial>, K>>
     (value: V) => PartialObjectBuilder<
       T,

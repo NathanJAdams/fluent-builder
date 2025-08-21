@@ -1,6 +1,6 @@
-import { describe, test, expect } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
-import { fluentBuilder } from '../src';
+import { fluentBuilder } from '../api';
 import { Dog, Employee, Human } from './test-types';
 
 describe('record-builder', () => {
@@ -40,6 +40,7 @@ describe('record-builder', () => {
         .buildElement()
         .buildOne()
         .buildRecord();
+      expect(tom.one.length).toBe(1);
     });
   });
 });
