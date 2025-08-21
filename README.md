@@ -4,12 +4,11 @@ A powerful TypeScript library for building any complex type, 100% fluent, arbitr
 
 ## Features
 
-- **Simple & Powerful**: A single function to build any type
+- **Simple & Powerful**: A single function to build any complex type, interface, array, record, union or tuple
 - **Type-Safe**: Full TypeScript support with compile-time validation
 - **Data-Safe**: Prevents overwriting data or building incomplete objects
 - **Fluent API**: Intuitive method chaining for object construction
 - **IntelliSense**: Rich autocomplete and type hints in your IDE
-- **Build Any Complex Type**: Support for user-defined types & interfaces, arrays, records, unions, tuples
 - **Flexible**: Works with any valid TypeScript type structure
 
 ## Installation
@@ -59,11 +58,16 @@ const user = fluentBuilder<User>()
   .build();
 ```
 
-## Core Concept
+## API Reference
 
-### Fluent Builder
+#### `fluentBuilder<T>()`
 
-ts-fluent-builder exports a single function: `fluentBuilder<T>()` which can be used to build any complex type in any combination at arbitrary depth (subject to compiler limitations):
+Creates a new fluent builder for the specified type.
+
+**Parameters:**
+- `T`: The TypeScript type to build
+
+**Returns:** A builder instance with functions ready to build the type
 
 ```typescript
 // objects
@@ -141,9 +145,7 @@ const config = fluentBuilder<Record<string, Config>>()
 
 ```typescript
 // polymorphic types via unions
-import { unionRegistryBuilder } from 'ts-fluent-builder';
 
-// Define base and derived types
 interface Shape {
   type: string;
   area: number;
@@ -160,9 +162,7 @@ interface Rectangle extends Shape {
   height: number;
 }
 
-type ShapeUnion = Circle | Rectangle;
-
-const shapes = fluentBuilder<Shape[]>()
+const shapes = fluentBuilder<(Circle | Rectangle)[]>()
   .pushObject()
     .type('circle')
     .area(Math.PI * 5 * 5)
@@ -186,19 +186,6 @@ const falsyValues = fluentBuilder<[boolean, number, bigint, string]>()
   .index3('')
   .buildTuple();
 ```
-
-## API Reference
-
-### Core Function
-
-#### `fluentBuilder<T>()`
-
-Creates a new fluent builder for the specified type.
-
-**Parameters:**
-- `T`: The TypeScript type to build
-
-**Returns:** A builder instance with functions ready to build the type
 
 ### Builder Methods
 
@@ -379,7 +366,7 @@ const duplicateKey = fluentBuilder<Record<string, boolean>>()
 
 ## Contributing
 
-We welcome contributions! Please open an issue or submit a pull request on [GitHub Issues](https://github.com/NathanJAdams/ts-fluent-builder/issues).
+Contributions are very welcome! Please open an issue or submit a pull request on [GitHub Issues](https://github.com/NathanJAdams/ts-fluent-builder/issues).
 
 ## License
 
