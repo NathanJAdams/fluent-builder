@@ -1,6 +1,6 @@
-import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX } from './suffixes';
+import { ARRAY_SUFFIX, INSTANCE_SUFFIX, RECORD_SUFFIX, SUB_TYPE_SUFFIX, TUPLE_SUFFIX } from './suffixes';
 
-type AccumulatedType = 'instance' | 'array' | 'record';
+type AccumulatedType = 'instance' | 'array' | 'record' | 'tuple';
 
 export const createBuilder = () => _createBuilder();
 
@@ -22,6 +22,9 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
         } else if (property.startsWith('set')) {
           accumulatedType = 'record';
           accumulatedValues = {};
+        } else if (property.startsWith('index')) {
+          accumulatedType = 'tuple';
+          accumulatedValues = [];
         } else {
           accumulatedType = 'instance';
           accumulatedValues = {};
@@ -35,6 +38,10 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
           if (accumulatedType !== 'record') {
             throw Error(`Cannot call a set() function on ${accumulatedType} type`);
           }
+        } else if (property.startsWith('index')) {
+          if (accumulatedType !== 'tuple') {
+            throw Error(`Cannot call an index() function on ${accumulatedType} type`);
+          }
         } else if (accumulatedType !== 'instance') {
           throw Error(`Cannot call a value function on ${accumulatedType} type`);
         }
@@ -43,12 +50,14 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
         ? 'array'
         : property.endsWith(RECORD_SUFFIX)
           ? 'record'
-          : (property.endsWith(INSTANCE_SUFFIX) || property.endsWith(SUB_TYPE_SUFFIX))
-            ? 'instance'
-            : undefined;
+          : property.endsWith(TUPLE_SUFFIX)
+            ? 'tuple'
+            : (property.endsWith(INSTANCE_SUFFIX) || property.endsWith(SUB_TYPE_SUFFIX))
+              ? 'instance'
+              : undefined;
       const nestedAccumulatedValues = (nestedAccumulatedType === undefined)
         ? undefined
-        : (nestedAccumulatedType === 'array')
+        : (nestedAccumulatedType === 'array' || nestedAccumulatedType === 'tuple')
           ? []
           : {};
       if (nestedAccumulatedType === undefined) {
@@ -62,6 +71,12 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
           return (value: any) => {
             const array = accumulatedValues as any[];
             array.push(value);
+            return proxy;
+          };
+        } else if (/^index[0-9]+$/.test(property)) {
+          return (value: any) => {
+            const tuple = accumulatedValues as any[];
+            tuple.push(value);
             return proxy;
           };
         } else {
@@ -83,6 +98,12 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
         return () => _createBuilder(nestedAccumulatedType, nestedAccumulatedValues, value => {
           const array = accumulatedValues as any[];
           array.push(value);
+          return proxy;
+        });
+      } else if (property.startsWith('index')) {
+        return () => _createBuilder(nestedAccumulatedType, nestedAccumulatedValues, value => {
+          const tuple = accumulatedValues as any[];
+          tuple.push(value);
           return proxy;
         });
       } else {
