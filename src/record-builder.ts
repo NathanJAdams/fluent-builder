@@ -1,6 +1,6 @@
 import { ArrayBuilder } from './array-builder';
 import { ObjectBuilder } from './object-builder';
-import { Builder, HasOnlyIndexSignature, IsExact, IsUserType, RecordValueType, UnusedName } from './utility-types';
+import { Builder, IsExact, IsRecord, IsUserType, RecordValueType, UnusedName } from './utility-types';
 
 type RecordBuilderValue<TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> = {
   set: <TName extends string> (name: UnusedName<TEntries, TName>, value: TValue) =>
@@ -13,7 +13,7 @@ type RecordBuilderValue<TEntries extends Record<string, TValue>, TValue, TFinal,
 };
 
 type RecordBuilderArray<TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
-  TValue extends any[]
+  TValue extends readonly any[]
   ? {
     setArray: <TName extends string>(name: UnusedName<TEntries, TName>) =>
       ArrayBuilder<
@@ -47,7 +47,7 @@ type RecordBuilderObject<TEntries extends Record<string, TValue>, TValue, TFinal
   : object;
 
 type RecordBuilderRecord<TEntries extends Record<string, TValue>, TValue, TFinal, TBuildSuffix extends string> =
-  HasOnlyIndexSignature<TValue> extends true
+  IsRecord<TValue> extends true
   ? {
     setRecord: <TName extends string>(name: UnusedName<TEntries, TName>) =>
       RecordBuilder<

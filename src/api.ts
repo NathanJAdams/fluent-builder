@@ -4,24 +4,20 @@ import { ErrorNotBuildable, ErrorValidButNotBuildable } from './errors';
 import { ObjectBuilder } from './object-builder';
 import { createBuilder } from './proxy';
 import { RecordBuilder } from './record-builder';
-import { HasOnlyIndexSignature, IsUserType, IsValid, RecordValueType } from './utility-types';
+import { IsRecord, IsUserType, IsValid, RecordValueType } from './utility-types';
 
-export const fluentBuilder = <T>(): ReturnType<T> => {
+export const fluentBuilder = <T>(): FluentBuilder<T> => {
   return createBuilder();
 };
 
-type ReturnType<T> =
-  [T] extends [any] // prevent distribution
-    ? IsValid<T> extends false
-      ? ErrorNotBuildable
-      : HasOnlyIndexSignature<T> extends true
-        ? RecordBuilder<RecordValueType<T>, T, typeof suffixes.record>
-        : [T] extends [infer U]
-          ? U extends any[]
-            ? ArrayBuilder<U, U, typeof suffixes.array>
-            : IsUserType<T> extends true
-              ? ObjectBuilder<T, T, typeof suffixes.object>
-              : ErrorValidButNotBuildable
-          : never
-    : never
-;
+type FluentBuilder<T> =
+  IsValid<T> extends false
+  ? ErrorNotBuildable
+  : IsRecord<T> extends true
+  ? RecordBuilder<RecordValueType<T>, T, typeof suffixes.record>
+  : [T] extends [readonly any[]]
+  ? ArrayBuilder<T, T, typeof suffixes.array>
+  : IsUserType<T> extends true
+  ? ObjectBuilder<T, T, typeof suffixes.object>
+  : ErrorValidButNotBuildable
+  ;

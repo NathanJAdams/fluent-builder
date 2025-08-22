@@ -142,3 +142,32 @@ export type UnionMemberWithNonEmptyArray = {
   numbersTuple: [number, number, number];
 };
 export type Union = UnionMemberNormal | UnionMemberWithNonEmptyArray;
+
+
+export type Library = {
+  books: Record<string, string>;
+};
+export type Places = {
+  cinemas: Record<string, string>;
+};
+
+export type Strings = {
+  kind: 'string';
+  values: string[];
+};
+export type Numbers = {
+  kind: 'number';
+  values: number[];
+};
+export type Single = {
+  kind: 'boolean';
+  values: boolean;
+};
+
+
+export type One = {
+  place: Library;
+};
+export type Two = {
+  place: Places;
+};

@@ -75,5 +75,11 @@ describe('array-builder', () => {
       expect(values[1]).toBe('hello');
       expect(values[2]).toBe(3543);
     });
+    test('array with fixed elements', () => {
+      const array = fluentBuilder<[number, ...number[]]>().index0(78).push(54).buildArray();
+      expect(array.length).toBe(2);
+      expect(array[0]).toBe(78);
+      expect(array[1]).toBe(54);
+    });
   });
 });

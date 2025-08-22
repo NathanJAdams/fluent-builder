@@ -1,6 +1,6 @@
 import { ObjectBuilder } from './object-builder';
 import { RecordBuilder } from './record-builder';
-import { ArrayLengthWithoutRest, ArrayRest, Builder, HasOnlyIndexSignature, Increment, IsExact, IsUserType, RecordValueType } from './utility-types';
+import { ArrayLengthWithoutRest, ArrayRest, Builder, Increment, IsExact, IsRecord, IsUserType, RecordValueType } from './utility-types';
 
 type IndexedArrayBuilderValue<TArray extends readonly any[], TFixedLength extends number, TRest, TIndex extends number, TFinal, TBuildSuffix extends string> = {
   [K in TIndex as `index${K}`]: (value: TArray[TIndex]) => IndexedArrayBuilder<TArray, TFixedLength, TRest, Increment<TIndex>, TFinal, TBuildSuffix>;
@@ -10,7 +10,7 @@ type RestArrayBuilderValue<TElement, TFinal, TBuildSuffix extends string> = {
 };
 
 type IndexedArrayBuilderArray<TArray extends readonly any[], TFixedLength extends number, TRest, TIndex extends number, TFinal, TBuildSuffix extends string> =
-  TArray[TIndex] extends any[]
+  TArray[TIndex] extends readonly any[]
   ? {
     [K in TIndex as `index${K}Array`]:
     () =>
@@ -22,7 +22,7 @@ type IndexedArrayBuilderArray<TArray extends readonly any[], TFixedLength extend
   }
   : object;
 type RestArrayBuilderArray<TElement, TFinal, TBuildSuffix extends string> =
-  TElement extends any[]
+  TElement extends readonly any[]
   ? {
     pushArray:
     () =>
@@ -58,7 +58,7 @@ type RestArrayBuilderObject<TElement, TFinal, TBuildSuffix extends string> =
   : object;
 
 type IndexedArrayBuilderRecord<TArray extends readonly any[], TFixedLength extends number, TRest, TIndex extends number, TFinal, TBuildSuffix extends string> =
-  HasOnlyIndexSignature<TArray[TIndex]> extends true
+  IsRecord<TArray[TIndex]> extends true
   ? {
     [K in TIndex as `index${K}Record`]: () =>
       RecordBuilder<
@@ -69,7 +69,7 @@ type IndexedArrayBuilderRecord<TArray extends readonly any[], TFixedLength exten
   }
   : object;
 type RestArrayBuilderRecord<TElement, TFinal, TBuildSuffix extends string> =
-  HasOnlyIndexSignature<TElement> extends true
+  IsRecord<TElement> extends true
   ? {
     pushRecord: () =>
       RecordBuilder<
@@ -103,4 +103,7 @@ type RestArrayBuilder<TElement, TFinal, TBuildSuffix extends string> =
     )
   )
   ;
-export type ArrayBuilder<TArray extends any[], TFinal, TBuildSuffix extends string> = IndexedArrayBuilder<TArray, ArrayLengthWithoutRest<TArray>, ArrayRest<TArray>, 0, TFinal, TBuildSuffix>;
+export type ArrayBuilder<TArray, TFinal, TBuildSuffix extends string> =
+  TArray extends readonly any[]
+  ? IndexedArrayBuilder<TArray, ArrayLengthWithoutRest<TArray>, ArrayRest<TArray>, 0, TFinal, TBuildSuffix>
+  : never;

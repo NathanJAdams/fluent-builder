@@ -26,6 +26,25 @@ export type IsValid<T> =
   : IsEmpty<T> extends true
   ? false
   : true;
+
+export type ArrayTypes<T, K extends string> =
+  T extends any
+  ? K extends keyof T
+  ? IsArray<T[K]> extends true
+  ? T[K]
+  : never
+  : never
+  : never;
+export type HasArrayKey<T, K extends string> =
+  ArrayTypes<T, K> extends never
+  ? false
+  : true;
+export type IsArray<T> =
+  IsAny<T> extends true
+  ? false
+  : T extends readonly unknown[]
+  ? true
+  : false;
 type NextIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, never];
 export type Increment<T extends number> = NextIndexes[T];
 type _ArrayLengthWithoutRest<T extends readonly unknown[], Count extends number> =
@@ -46,9 +65,7 @@ export type IsExact<T, U> =
   : false
   : false;
 
-export type UnionToIntersection<U> =
-  (U extends any ? (x: U) => void : never) extends
-  (x: infer I) => void ? I : never;
+export type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
 
 export type RecordValueType<T> = T extends Record<PropertyKey, infer V> ? V : never;
 
@@ -68,10 +85,40 @@ export type FilterByPartial<T, TPartial> = T extends any
   : never
   : never;
 
-export type HasOnlyIndexSignature<T> =
-  keyof T extends string
-  ? string extends keyof T
+export type IsRecord<T> =
+  T extends object
+  ? T extends any[]
+  ? false
+  : T extends Function
+  ? false
+  : string extends keyof T
   ? true
+  : false
+  : false;
+
+export type UnionHasAtLeastOneRecordNamed<TUnion, TFieldName extends PropertyKey> =
+  [TUnion] extends [never]
+  ? false
+  : true extends (
+    TUnion extends any
+    ? TFieldName extends keyof TUnion
+    ? IsRecord<NonNullable<TUnion[TFieldName]>>
+    : false
+    : false
+  )
+  ? true
+  : false;
+
+export type IsUserTypeKeyed<T, K extends string> =
+  T extends any
+  ? K extends keyof T
+  ? T[K] extends never
+  ? false
+  : [T[K]] extends [readonly any[]]
+  ? false
+  : IsRecord<T> extends true
+  ? false
+  : true
   : false
   : false;
 
@@ -79,9 +126,9 @@ export type IsUserType<T> =
   T extends object
   ? keyof T extends never
   ? false
-  : T extends any[]
+  : T extends readonly any[]
   ? false
-  : HasOnlyIndexSignature<T> extends true
+  : IsRecord<T> extends true
   ? false
   : true
   : false;
@@ -101,7 +148,7 @@ type IsPartialSubset<T, TPartial> =
   ? false
   : true
   : false;
-export type AsRequiredKeys<TUnion, TPartial extends Partial<TUnion>> =
+export type AsRequiredKeys<TUnion, TPartial> =
   TUnion extends any
   ? IsPartialSubset<TUnion, TPartial> extends true
   ? Exclude<RequiredKeys<TUnion>, keyof TPartial>

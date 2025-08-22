@@ -18,6 +18,9 @@ describe('record-builder', () => {
       expect(people.Employee3.age).toBe(102);
       expect(people.Employee3.alive).toBe(false);
     });
+    test('builds a union of records', () => {
+      fluentBuilder<Record<string, string> | Record<string, number>>().set('a', 'dksfhkds').set('b', 43543).buildRecord();
+    });
     test('builds sub types', () => {
       const animals = fluentBuilder<Record<string, Dog | Human>>()
         .setObject('Sparky').kind('dog').food('sausage').buildSparky()
@@ -36,7 +39,6 @@ describe('record-builder', () => {
         .buildPhil()
         .buildGrandchildren()
         .age(45)
-        .kind('human')
         .buildElement()
         .buildOne()
         .buildRecord();
