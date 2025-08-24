@@ -34,7 +34,7 @@ export default [
         warnOnUnassignedImports: true,
       }],
       'sort-imports': ['error', {
-        ignoreCase: false,
+        ignoreCase: true,
         ignoreDeclarationSort: true,
         ignoreMemberSort: false,
         memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single']

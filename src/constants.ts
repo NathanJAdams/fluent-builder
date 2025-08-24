@@ -1,6 +1,7 @@
 export const errorMessages = {
-  notBuildable: 'Primitives, any, unknown, never, function, empty object/tuple types cannot be built. Please choose another type.',
-  validNotBuildable: 'Internal Error: Type is valid but cannot currently be built. Please raise an issue at https://github.com/NathanJAdams/ts-fluent-builder/issues and include the type causing this error. Thank you.',
+  notValid: 'Primitives, any, unknown, never, function, empty object/tuple types cannot be built. Please choose another type.',
+  notBuildable: 'Internal Error: Type is valid but cannot currently be built. Please raise an issue at https://github.com/NathanJAdams/ts-fluent-builder/issues and include the type causing this error. Thank you.',
+  notConsistent: 'When using a union, types must all be valid and consistent ie. only arrays, only records or only objects.',
 } as const;
 
 export const suffixes = {

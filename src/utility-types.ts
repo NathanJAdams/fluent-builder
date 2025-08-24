@@ -1,172 +1,232 @@
-type IsAny<T> = 0 extends (1 & T) ? true : false;
-type IsUnknown<T> = unknown extends T ? (T extends unknown ? true : false) : false;
-type IsEmpty<T> =
-  [keyof T] extends [never]
-  ? ([T] extends [{}] ? true : false)
-  : (T extends readonly [] ? true : false);
-type Primitive =
+export type FindBuildTypeApi<T> =
+  [T] extends [never]
+  ? BuildType.NotValid
+  : FindBuildTypeDistributed<T> extends infer TBuildType
+  ? AllUnionMembersAreIdentical<TBuildType> extends true
+  ? TBuildType
+  : BuildType.NotConsistent
+  : never
+  ;
+export type AllUnionMembersAreIdentical<T> = _AllUnionMembersAreIdentical<T, T>;
+type _AllUnionMembersAreIdentical<T, U = T> =
+  T extends U
+  ? U extends T
+  ? true
+  : false
+  : false
+  ;
+export type FindBuildTypeDistributed<T> =
+  T extends any
+  ? IsValid<T> extends false
+  ? BuildType.NotValid
+  : [T] extends [readonly any[]]
+  ? BuildType.Array
+  : [T] extends [Record<string, any>]
+  ? string extends keyof T
+  ? BuildType.Record
+  : BuildType.Object
+  : BuildType.NotBuildable
+  : never
+  ;
+export enum BuildType {
+  NotValid = 'NotValid',
+  NotBuildable = 'NotBuildable',
+  NotConsistent = 'NotConsistent',
+  Array = 'Array',
+  Record = 'Record',
+  Object = 'Object',
+};
+export type IsValid<T> =
+  [T] extends [never]
+  ? false
+  : T extends any
+  ? IsIgnored<T> extends true
+  ? false
+  : T extends Primitive
+  ? false
+  : true
+  : false
+  ;
+export type IsIgnored<T> =
+  [T] extends [never]
+  ? true
+  : IsAny<T> extends true
+  ? true
+  : T extends null
+  ? true
+  : T extends undefined
+  ? true
+  : IsExact<T, unknown> extends true
+  ? true
+  : T extends Function
+  ? true
+  : T extends readonly []
+  ? true
+  : keyof T extends never
+  ? true
+  : false
+  ;
+type IsAny<T> =
+  0 extends (1 & T)
+  ? true
+  : false
+  ;
+export type Primitive =
   | string
   | number
   | boolean
   | bigint
   | symbol
-  | null
-  | undefined;
-export type IsValid<T> =
-  [T] extends [never]
-  ? false
-  : T extends Primitive
-  ? false
-  : T extends Function
-  ? false
-  : IsAny<T> extends true
-  ? false
-  : IsUnknown<T> extends true
-  ? false
-  : IsEmpty<T> extends true
-  ? false
-  : true;
-
-export type ArrayTypes<T, K extends string> =
-  T extends any
-  ? K extends keyof T
-  ? IsArray<T[K]> extends true
-  ? T[K]
-  : never
-  : never
-  : never;
-export type HasArrayKey<T, K extends string> =
-  ArrayTypes<T, K> extends never
-  ? false
-  : true;
+  ;
 export type IsArray<T> =
-  IsAny<T> extends true
+  IsIgnored<T> extends true
   ? false
-  : T extends readonly unknown[]
+  : [T] extends [readonly unknown[]]
   ? true
-  : false;
-type NextIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, never];
-export type Increment<T extends number> = NextIndexes[T];
-type _ArrayLengthWithoutRest<T extends readonly unknown[], Count extends number> =
-  T extends [unknown, ...infer Rest]
-  ? Increment<Count> extends never
-  ? never
-  : _ArrayLengthWithoutRest<Rest, Increment<Count>>
-  : Count;
-export type ArrayLengthWithoutRest<T extends readonly unknown[]> = _ArrayLengthWithoutRest<T, 0>;
-export type ArrayRest<T extends readonly unknown[]> =
-  number extends T['length']
-  ? T[ArrayLengthWithoutRest<T>]
-  : never;
+  : false
+  ;
+export type IsObject<T> =
+  IsIgnored<T> extends true
+  ? false
+  : [T] extends [never]
+  ? false
+  : false extends (
+    T extends any
+    ? IsIgnored<T> extends true
+    ? false
+    : [T] extends [Primitive]
+    ? false
+    : keyof T extends string
+    ? string extends keyof T
+    ? false
+    : true
+    : false
+    : false
+  )
+  ? false
+  : true
+  ;
+export type IsRecord<T> =
+  IsIgnored<T> extends true
+  ? false
+  : string extends keyof T
+  ? true
+  : false
+  ;
+export type IsUnion<T> =
+  IsIgnored<T> extends true
+  ? false
+  : [T] extends [boolean]
+  ? false  // treat boolean as non-union (even though it's true | false)
+  : _IsUnion<T, T>
+  ;
+type _IsUnion<TOriginal, TDistributed> =
+  TDistributed extends any
+  ? [TOriginal] extends [TDistributed]
+  ? false
+  : true
+  : never
+  ;
 export type IsExact<T, U> =
   [T] extends [U]
   ? [U] extends [T]
   ? true
   : false
-  : false;
-
-export type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
-
-export type RecordValueType<T> = T extends Record<PropertyKey, infer V> ? V : never;
-
-export type Keys<T> = T extends any ? keyof T : never;
-
-export type Values<T, K extends string> = T extends any
-  ? K extends keyof T
+  : false
+  ;
+export type Keys<T> =
+  IsIgnored<T> extends true
+  ? never
+  : keyof T
+  ;
+export type Values<T, K extends string> =
+  IsIgnored<T> extends true
+  ? never
+  : K extends keyof T
   ? T[K]
   : never
-  : never;
-
-export type FilterByPartial<T, TPartial> = T extends any
+  ;
+export type ArrayValues<T, K extends string> =
+  IsIgnored<T> extends true
+  ? never
+  : [K] extends [keyof T]
+  ? IsArray<Required<T>[K]> extends true
+  ? T[K]
+  : never
+  : never
+  ;
+export type ArrayRest<T extends readonly unknown[]> =
+  T extends any
+  ? number extends T['length']
+  ? T[ArrayLengthWithoutRest<T>]
+  : never
+  : never
+  ;
+export type ArrayLengthWithoutRest<T extends readonly unknown[]> = _ArrayLengthWithoutRest<T, 0>;
+type _ArrayLengthWithoutRest<T extends readonly unknown[], Count extends number> =
+  T extends [unknown, ...infer Rest]
+  ? Increment<Count> extends never
+  ? never
+  : _ArrayLengthWithoutRest<Rest, Increment<Count>>
+  : Count
+  ;
+export type Increment<T extends number> = NextIndexes[T];
+type NextIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, never];
+export type UnionToIntersection<U> =
+  (U extends any ? (x: U) => void : never) extends (x: infer I) => void
+  ? I
+  : never
+  ;
+export type RecordValueType<T> =
+  T extends Record<string, infer V>
+  ? V
+  : never
+  ;
+export type FilterByPartial<T, TPartial> =
+  T extends any
   ? TPartial extends Partial<T>
   ? keyof TPartial extends keyof T
   ? T
   : never
   : never
-  : never;
-
-export type IsRecord<T> =
-  T extends object
-  ? T extends any[]
-  ? false
-  : T extends Function
-  ? false
-  : string extends keyof T
-  ? true
-  : false
-  : false;
-
-export type UnionHasAtLeastOneRecordNamed<TUnion, TFieldName extends PropertyKey> =
-  [TUnion] extends [never]
-  ? false
-  : true extends (
-    TUnion extends any
-    ? TFieldName extends keyof TUnion
-    ? IsRecord<NonNullable<TUnion[TFieldName]>>
-    : false
-    : false
-  )
-  ? true
-  : false;
-
-export type IsUserTypeKeyed<T, K extends string> =
+  : never
+  ;
+export type AsRequiredKeys<T, TPartial> =
   T extends any
-  ? K extends keyof T
-  ? T[K] extends never
-  ? false
-  : [T[K]] extends [readonly any[]]
-  ? false
-  : IsRecord<T> extends true
-  ? false
-  : true
-  : false
-  : false;
-
-export type IsUserType<T> =
-  T extends object
-  ? keyof T extends never
-  ? false
-  : T extends readonly any[]
-  ? false
-  : IsRecord<T> extends true
-  ? false
-  : true
-  : false;
-
-export type UnusedName<TEntries extends Record<string, any>, TName extends string> = TName extends keyof TEntries ? never : TName;
-
-type RequiredKeys<T> = {
-  [K in keyof T]-?: undefined extends T[K] ? never : K
-}[keyof T];
+  ? IsPartialSubset<T, TPartial> extends true
+  ? Exclude<RequiredKeys<T>, keyof TPartial>
+  : never
+  : never
+  ;
 type IsPartialSubset<T, TPartial> =
   keyof TPartial extends never
   ? true
   : keyof TPartial extends keyof T
   ? {
-    [K in keyof TPartial]: TPartial[K] extends T[K] ? true : false;
+    [K in keyof TPartial]:
+    TPartial[K] extends T[K]
+    ? true
+    : false;
   }[keyof TPartial] extends false
   ? false
   : true
-  : false;
-export type AsRequiredKeys<TUnion, TPartial> =
-  TUnion extends any
-  ? IsPartialSubset<TUnion, TPartial> extends true
-  ? Exclude<RequiredKeys<TUnion>, keyof TPartial>
+  : false
+  ;
+type RequiredKeys<T> =
+  T extends any
+  ? {
+    [K in keyof T]-?: string extends K
+    ? never
+    : undefined extends T[K]
+    ? never
+    : K
+  }[keyof T]
   : never
-  : never;
-
-type Clean<T> = { [K in keyof T]: T[K] } extends infer TCleaned
-  ? { [K in keyof TCleaned]: TCleaned[K] }
-  : never;
-
-export type Builder<TBuilt, TBuildSuffix extends string> =
-  & {
-    build: () => Clean<TBuilt>;
-  }
-  & {
-    [K in `build${Capitalize<TBuildSuffix>}`]: () => Clean<TBuilt>;
-  };
-
-export type HasError<TError extends string> = {
-  error: (errorMessage: string extends TError ? never : TError) => never;
-};
+  ;
+export type UnusedName<TEntries, TName extends string> =
+  TName extends any
+  ? TName extends keyof TEntries
+  ? never
+  : TName
+  : never
+  ;

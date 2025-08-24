@@ -1,23 +1,29 @@
 import { ArrayBuilder } from './array-builder';
 import { suffixes } from './constants';
-import { ErrorNotBuildable, ErrorValidButNotBuildable } from './errors';
+import { ErrorNotBuildable, ErrorNotConsistent, ErrorNotValid } from './errors';
 import { ObjectBuilder } from './object-builder';
 import { createBuilder } from './proxy';
 import { RecordBuilder } from './record-builder';
-import { IsRecord, IsUserType, IsValid, RecordValueType } from './utility-types';
+import { BuildType, FindBuildTypeApi } from './utility-types';
 
 export const fluentBuilder = <T>(): FluentBuilder<T> => {
   return createBuilder();
 };
 
 type FluentBuilder<T> =
-  IsValid<T> extends false
-  ? ErrorNotBuildable
-  : IsRecord<T> extends true
-  ? RecordBuilder<RecordValueType<T>, T, typeof suffixes.record>
-  : [T] extends [readonly any[]]
+  FindBuildTypeApi<T> extends infer TBuildType
+  ? TBuildType extends BuildType.NotValid
+  ? ErrorNotValid
+  : TBuildType extends BuildType.NotConsistent
+  ? ErrorNotConsistent
+  : TBuildType extends BuildType.Array
   ? ArrayBuilder<T, T, typeof suffixes.array>
-  : IsUserType<T> extends true
+  : TBuildType extends BuildType.Record
+  ? RecordBuilder<T, T, typeof suffixes.record>
+  : TBuildType extends BuildType.Object
   ? ObjectBuilder<T, T, typeof suffixes.object>
-  : ErrorValidButNotBuildable
+  : TBuildType extends BuildType.NotBuildable
+  ? ErrorNotBuildable
+  : never
+  : never
   ;
