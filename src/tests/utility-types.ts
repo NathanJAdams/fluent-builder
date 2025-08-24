@@ -168,6 +168,7 @@ const _ArrayRest_tuple: IsExact<ArrayRest<[...number[]]>, number> = true;
 const _ArrayRest_tupleUnion: IsExact<ArrayRest<[...number[]] | [...string[]]>, number | string> = true;
 const _ArrayRest_tupleWithFixed: IsExact<ArrayRest<[string, boolean, ...number[]]>, number> = true;
 const _ArrayRest_tupleWithFixedUnion: IsExact<ArrayRest<[string, boolean, ...number[]] | [boolean, ...string[]]>, number | string> = true;
+const _ArrayRest_tupleWithNestedArrayRest: IsExact<ArrayRest<[string, boolean, ...number[][]]>, number[]> = true;
 
 const _ArrayLengthWithoutRest_array: IsExact<ArrayLengthWithoutRest<number[]>, 0> = true;
 const _ArrayLengthWithoutRest_arrayUnion: IsExact<ArrayLengthWithoutRest<number[] | string[]>, 0> = true;
