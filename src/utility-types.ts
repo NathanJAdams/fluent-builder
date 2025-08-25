@@ -94,7 +94,7 @@ export type Primitive =
 export type IsArray<T> =
   IsIgnored<T> extends true
   ? false
-  : [T] extends [readonly unknown[]]
+  : T extends readonly unknown[]
   ? true
   : false
   ;
@@ -127,10 +127,24 @@ export type IsRecord<T> =
   : false
   ;
 export type AsArray<T> =
-  IsIgnored<T> extends true
-  ? never
-  : T extends readonly any[]
+  T extends any
+  ? IsArray<T> extends true
   ? T
+  : never
+  : never
+  ;
+export type AsObject<T> =
+  T extends any
+  ? IsObject<T> extends true
+  ? T
+  : never
+  : never
+  ;
+export type AsRecord<T> =
+  T extends any
+  ? IsRecord<T> extends true
+  ? T
+  : never
   : never
   ;
 export type IsArrayPotentialMatch<T extends readonly any[], TRequired extends readonly any[]> =
@@ -207,8 +221,8 @@ export type ArrayValues<T, K extends string> =
 export type ArrayFixed<T extends readonly any[]> =
   HasArrayRest<T> extends true
   ? _ArrayFixed<T, ArrayLengthWithoutRest<T>>
-  : T;
-
+  : T
+  ;
 type _ArrayFixed<T extends readonly any[], N extends number> =
   N extends 0
   ? []
@@ -216,7 +230,8 @@ type _ArrayFixed<T extends readonly any[], N extends number> =
   ? N extends 1
   ? [First]
   : [First, ..._ArrayFixed<Rest, Decrement<N>>]
-  : never;
+  : never
+  ;
 export type ArrayRest<T extends readonly unknown[]> =
   T extends any
   ? number extends T['length']
@@ -232,9 +247,7 @@ export type HasArrayRest<T extends readonly unknown[]> =
 export type ArrayLengthWithoutRest<T extends readonly unknown[]> = _ArrayLengthWithoutRest<T, 0>;
 type _ArrayLengthWithoutRest<T extends readonly unknown[], Count extends number> =
   T extends [unknown, ...infer Rest]
-  ? Increment<Count> extends never
-  ? never
-  : _ArrayLengthWithoutRest<Rest, Increment<Count>>
+  ? _ArrayLengthWithoutRest<Rest, Increment<Count>>
   : Count
   ;
 export type Increment<T extends number> = NextIndexes[T];
