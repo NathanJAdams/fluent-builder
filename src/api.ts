@@ -1,29 +1,27 @@
-import { ArrayBuilder } from './array-builder';
-import { suffixes } from './constants';
-import { ErrorNotBuildable, ErrorNotConsistent, ErrorNotValid } from './errors';
-import { ObjectBuilder } from './object-builder';
-import { createBuilder } from './proxy';
-import { RecordBuilder } from './record-builder';
-import { BuildType, FindBuildTypeApi } from './utility-types';
+import { ArrayBuilderTopLevel } from './array-builder';
+import { ErrorNotBuildable, ErrorNotValid } from './errors';
+import { ObjectBuilderTopLevel } from './object-builder';
+import { createBuilderFromProxy } from './proxy';
+import { RecordBuilderTopLevel } from './record-builder';
+import { IsValid, UnionToIntersection } from './utility-types';
 
 export const fluentBuilder = <T>(): FluentBuilder<T> => {
-  return createBuilder();
+  return createBuilderFromProxy();
 };
 
-type FluentBuilder<T> =
-  FindBuildTypeApi<T> extends infer TBuildType
-  ? TBuildType extends BuildType.NotValid
-  ? ErrorNotValid
-  : TBuildType extends BuildType.NotConsistent
-  ? ErrorNotConsistent
-  : TBuildType extends BuildType.Array
-  ? ArrayBuilder<T, T, typeof suffixes.array>
-  : TBuildType extends BuildType.Record
-  ? RecordBuilder<T, T, typeof suffixes.record>
-  : TBuildType extends BuildType.Object
-  ? ObjectBuilder<T, T, typeof suffixes.object>
-  : TBuildType extends BuildType.NotBuildable
-  ? ErrorNotBuildable
-  : never
-  : never
-  ;
+export type FluentBuilder<T> =
+  UnionToIntersection<
+    [T] extends [never]
+      ? ErrorNotValid
+      : T extends any
+        ? IsValid<T> extends false
+          ? ErrorNotValid
+          : T extends readonly any[]
+            ? ArrayBuilderTopLevel<T>
+            : T extends Record<string, any>
+              ? string extends keyof T
+                ? RecordBuilderTopLevel<T>
+                : ObjectBuilderTopLevel<T>
+              : ErrorNotBuildable
+        : never
+  >;

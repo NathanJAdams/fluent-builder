@@ -15,8 +15,21 @@ type _AllUnionMembersAreIdentical<T, U = T> =
   : false
   : false
   ;
+export type FindValidBuildTypeDistributed<T> =
+  [T] extends [never]
+  ? never
+  : T extends any
+  ? FindBuildTypeDistributed<T> extends infer TBuildType
+  ? TBuildType extends (BuildType.Array | BuildType.Object | BuildType.Record)
+  ? TBuildType
+  : never
+  : never
+  : never
+  ;
 export type FindBuildTypeDistributed<T> =
-  T extends any
+  [T] extends [never]
+  ? BuildType.NotValid
+  : T extends any
   ? IsValid<T> extends false
   ? BuildType.NotValid
   : [T] extends [readonly any[]]
@@ -113,6 +126,42 @@ export type IsRecord<T> =
   ? true
   : false
   ;
+export type AsArray<T> =
+  IsIgnored<T> extends true
+  ? never
+  : T extends readonly any[]
+  ? T
+  : never
+  ;
+export type IsArrayPotentialMatch<T extends readonly any[], TRequired extends readonly any[]> =
+  HasArrayRest<T> extends infer THasRest
+  ? HasArrayRest<TRequired> extends infer TRequiredHasRest
+  ? [THasRest, TRequiredHasRest] extends [false, false]
+  ? TRequired extends readonly [...T, ...any[]] ? true : false
+  : [THasRest, TRequiredHasRest] extends [false, true]
+  ? ArrayFixed<TRequired> extends infer TRequiredFixed
+  ? TRequiredFixed extends readonly [...T, ...any[]] ? true : false
+  : never
+  : [THasRest, TRequiredHasRest] extends [true, false]
+  ? ArrayFixed<T> extends infer TFixed
+  ? [TFixed, TRequired] extends [TRequired, TFixed] ? true : false
+  : never
+  : ArrayFixed<T> extends infer TFixed
+  ? ArrayFixed<TRequired> extends infer TRequiredFixed
+  ? ArrayRest<T> extends infer TRest
+  ? ArrayRest<TRequired> extends infer TRequiredRest
+  ? [TFixed, TRequiredFixed] extends [TRequiredFixed, TFixed]
+  ? [TRest, TRequiredRest] extends [TRequiredRest, TRest]
+  ? true
+  : false
+  : false
+  : never
+  : never
+  : never
+  : never
+  : never
+  : never
+  ;
 export type IsUnion<T> =
   IsIgnored<T> extends true
   ? false
@@ -155,12 +204,30 @@ export type ArrayValues<T, K extends string> =
   : never
   : never
   ;
+export type ArrayFixed<T extends readonly any[]> =
+  HasArrayRest<T> extends true
+  ? _ArrayFixed<T, ArrayLengthWithoutRest<T>>
+  : T;
+
+type _ArrayFixed<T extends readonly any[], N extends number> =
+  N extends 0
+  ? []
+  : T extends readonly [infer First, ...infer Rest]
+  ? N extends 1
+  ? [First]
+  : [First, ..._ArrayFixed<Rest, Decrement<N>>]
+  : never;
 export type ArrayRest<T extends readonly unknown[]> =
   T extends any
   ? number extends T['length']
   ? T[ArrayLengthWithoutRest<T>]
   : never
   : never
+  ;
+export type HasArrayRest<T extends readonly unknown[]> =
+  ArrayRest<T> extends never
+  ? false
+  : true
   ;
 export type ArrayLengthWithoutRest<T extends readonly unknown[]> = _ArrayLengthWithoutRest<T, 0>;
 type _ArrayLengthWithoutRest<T extends readonly unknown[], Count extends number> =
@@ -171,7 +238,9 @@ type _ArrayLengthWithoutRest<T extends readonly unknown[], Count extends number>
   : Count
   ;
 export type Increment<T extends number> = NextIndexes[T];
+export type Decrement<T extends number> = PreviousIndexes[T];
 type NextIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, never];
+type PreviousIndexes = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 export type UnionToIntersection<U> =
   (U extends any ? (x: U) => void : never) extends (x: infer I) => void
   ? I

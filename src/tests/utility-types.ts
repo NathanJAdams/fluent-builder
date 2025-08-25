@@ -1,4 +1,4 @@
-import { AllUnionMembersAreIdentical, ArrayLengthWithoutRest, ArrayRest, ArrayValues, AsRequiredKeys, BuildType, FilterByPartial, FindBuildTypeApi, FindBuildTypeDistributed, IsArray, IsExact, IsIgnored, IsObject, IsRecord, IsUnion, IsValid, Keys, UnusedName, Values } from '../utility-types';
+import { AllUnionMembersAreIdentical, ArrayFixed, ArrayLengthWithoutRest, ArrayRest, ArrayValues, AsArray, AsRequiredKeys, BuildType, FilterByPartial, FindBuildTypeApi, FindBuildTypeDistributed, FindValidBuildTypeDistributed, HasArrayRest, IsArray, IsArrayPotentialMatch, IsExact, IsIgnored, IsObject, IsRecord, IsUnion, IsValid, Keys, UnusedName, Values } from '../utility-types';
 
 type ObjectA = { a: string; x: boolean; };
 type ObjectA_Array = { a: string[]; z: boolean; };
@@ -54,7 +54,7 @@ const _IsUnion_readonlyArray: IsUnion<readonly number[]> = false;
 const _IsUnion_readonlyArrayUnion: IsUnion<readonly number[] | readonly string[]> = true;
 const _IsUnion_record: IsUnion<Record<PropertyKey, any>> = false;
 const _IsUnion_recordUnionAll: IsUnion<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_C>> = true;
-// @ts-expect-error Expected to fail as typescript collapses compatible types before IsUnion even sees it
+// @ts-expect-error Expected to fail as typescript collapses compatible types before IsUnion sees it
 const _IsUnion_recordUnionCompatible: IsUnion<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_Compatible>> = true;
 const _IsUnion_recordUnionSomeNumber: IsUnion<Record<PropertyKey, ObjectA> | number> = true;
 const _IsUnion_recordUnionSomeString: IsUnion<Record<PropertyKey, ObjectA> | string> = true;
@@ -110,6 +110,24 @@ const _IsRecord_recordUnionAll: IsRecord<Record<PropertyKey, ObjectA> | Record<P
 const _IsRecord_recordUnionCompatible: IsRecord<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_Compatible>> = true;
 const _IsRecord_recordUnionSomeNumber: IsRecord<Record<PropertyKey, ObjectA> | number> = false;
 const _IsRecord_recordUnionSomeString: IsRecord<Record<PropertyKey, ObjectA> | string> = false;
+
+const _AsArray_object: IsExact<AsArray<ObjectA>, never> = true;
+const _AsArray_objectUnion: IsExact<AsArray<ObjectA | ObjectA_C>, never> = true;
+const _AsArray_objectUnionMixedNumber: IsExact<AsArray<ObjectA | number>, never> = true;
+const _AsArray_objectUnionMixedString: IsExact<AsArray<ObjectA | string[]>, string[]> = true;
+const _AsArray_tuple: IsExact<AsArray<[number]>, [number]> = true;
+const _AsArray_tupleUnion: IsExact<AsArray<[number] | [string]>, [number] | [string]> = true;
+const _AsArray_array: IsExact<AsArray<number[]>, number[]> = true;
+const _AsArray_arrayUnion: IsExact<AsArray<number[] | string[]>, number[] | string[]> = true;
+const _AsArray_readonlyArray: IsExact<AsArray<readonly number[]>, readonly number[]> = true;
+const _AsArray_readonlyArrayUnion: IsExact<AsArray<readonly number[] | readonly string[]>, readonly number[] | readonly string[]> = true;
+const _AsArray_mixedArrayUnion: IsExact<AsArray<number[] | readonly string[]>, number[] | readonly string[]> = true;
+const _AsArray_mixedArrayUnion2: IsExact<AsArray<number | string[]>, string[]> = true;
+const _AsArray_record: IsExact<AsArray<Record<PropertyKey, any>>, never> = true;
+const _AsArray_recordUnionAll: IsExact<AsArray<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_C>>, never> = true;
+const _AsArray_recordUnionCompatible: IsExact<AsArray<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_Compatible>>, never> = true;
+const _AsArray_recordUnionSomeNumber: IsExact<AsArray<Record<PropertyKey, ObjectA> | number[]>, number[]> = true;
+const _AsArray_recordUnionSomeString: IsExact<AsArray<Record<PropertyKey, ObjectA> | string[]>, string[]> = true;
 
 const _IsValid_any: IsValid<any> = false;
 const _IsValid_boolean: IsValid<boolean> = false;
@@ -170,6 +188,16 @@ const _ArrayRest_tupleWithFixed: IsExact<ArrayRest<[string, boolean, ...number[]
 const _ArrayRest_tupleWithFixedUnion: IsExact<ArrayRest<[string, boolean, ...number[]] | [boolean, ...string[]]>, number | string> = true;
 const _ArrayRest_tupleWithNestedArrayRest: IsExact<ArrayRest<[string, boolean, ...number[][]]>, number[]> = true;
 
+const _HasArrayRest1: IsExact<HasArrayRest<[]>, false> = true;
+const _HasArrayRest2: IsExact<HasArrayRest<[string]>, false> = true;
+const _HasArrayRest3: IsExact<HasArrayRest<string[]>, true> = true;
+
+const _ArrayFixed_array: IsExact<ArrayFixed<number[]>, []> = true;
+const _ArrayFixed_tuple1: IsExact<ArrayFixed<[number]>, [number]> = true;
+const _ArrayFixed_tuple2: IsExact<ArrayFixed<[string, number]>, [string, number]> = true;
+const _ArrayFixed_tupleOnlyRest: IsExact<ArrayFixed<[...number[]]>, []> = true;
+const _ArrayFixed_tupleFixedAndRest: IsExact<ArrayFixed<[string, boolean, ...number[]]>, [string, boolean]> = true;
+
 const _ArrayLengthWithoutRest_array: IsExact<ArrayLengthWithoutRest<number[]>, 0> = true;
 const _ArrayLengthWithoutRest_arrayUnion: IsExact<ArrayLengthWithoutRest<number[] | string[]>, 0> = true;
 const _ArrayLengthWithoutRest_arrayTupleUnion: IsExact<ArrayLengthWithoutRest<number[] | [string]>, 0 | 1> = true;
@@ -180,6 +208,18 @@ const _ArrayLengthWithoutRest_tuple: IsExact<ArrayLengthWithoutRest<[...number[]
 const _ArrayLengthWithoutRest_tupleUnion: IsExact<ArrayLengthWithoutRest<[...number[]] | [...string[]]>, 0> = true;
 const _ArrayLengthWithoutRest_tupleWithFixed: IsExact<ArrayLengthWithoutRest<[string, boolean, ...number[]]>, 2> = true;
 const _ArrayLengthWithoutRest_tupleWithFixedUnion: IsExact<ArrayLengthWithoutRest<[string, boolean, ...number[]] | [boolean, ...string[]]>, 1 | 2> = true;
+
+const _IsArrayMatch_identicalTuple1: IsArrayPotentialMatch<[], []> = true;
+const _IsArrayMatch_identicalTuple2: IsArrayPotentialMatch<[string], [string]> = true;
+const _IsArrayMatch_identicalTuple3: IsArrayPotentialMatch<[string, number], [string, number]> = true;
+const _IsArrayMatch_differentTuple: IsArrayPotentialMatch<[number, number], [string, string]> = false;
+const _IsArrayMatch_larger: IsArrayPotentialMatch<[string, number, boolean], [string, number]> = false;
+const _IsArrayMatch_smaller: IsArrayPotentialMatch<[string, number], [string, number, boolean]> = true;
+const _IsArrayMatch_identicalArray: IsArrayPotentialMatch<string[], string[]> = true;
+const _IsArrayMatch_identicalArrayTupleRest: IsArrayPotentialMatch<string[], [...string[]]> = true;
+const _IsArrayMatch_identicalTupleRestArray: IsArrayPotentialMatch<[...string[]], string[]> = true;
+const _IsArrayMatch_identicalRestArray: IsArrayPotentialMatch<[number, ...string[]], [number, ...string[]]> = true;
+const _IsArrayMatch_differentRestArray: IsArrayPotentialMatch<[number, ...number[]], [number, ...string[]]> = false;
 
 const _AsRequiredKeys_record: IsExact<AsRequiredKeys<Record<string, string>, {}>, never> = true;
 const _AsRequiredKeys_recordUnion: IsExact<AsRequiredKeys<Record<string, string> | Record<string, number>, {}>, never> = true;
@@ -208,7 +248,7 @@ const _FindBuildTypeDistributed_undefined: IsExact<FindBuildTypeDistributed<unde
 const _FindBuildTypeDistributed_undefinedMixed: IsExact<FindBuildTypeDistributed<undefined | string[]>, BuildType.NotValid | BuildType.Array> = true;
 const _FindBuildTypeDistributed_unknown: IsExact<FindBuildTypeDistributed<unknown>, BuildType.NotValid> = true;
 const _FindBuildTypeDistributed_unknownMixed: IsExact<FindBuildTypeDistributed<unknown | string[]>, BuildType.NotValid> = true;
-const _FindBuildTypeDistributed_never: IsExact<FindBuildTypeDistributed<never>, never> = true;
+const _FindBuildTypeDistributed_never: IsExact<FindBuildTypeDistributed<never>, BuildType.NotValid> = true;
 const _FindBuildTypeDistributed_plainObject: IsExact<FindBuildTypeDistributed<object>, BuildType.NotValid> = true;
 const _FindBuildTypeDistributed_plainObjectMixed: IsExact<FindBuildTypeDistributed<object | string[]>, BuildType.NotValid | BuildType.Array> = true;
 const _FindBuildTypeDistributed_emptyObject: IsExact<FindBuildTypeDistributed<{}>, BuildType.NotValid> = true;
@@ -239,40 +279,79 @@ const _FindBuildTypeDistributed_recordUnionSomeString: IsExact<FindBuildTypeDist
 const _FindBuildTypeDistributed_recordUnionMixedArray: IsExact<FindBuildTypeDistributed<Record<PropertyKey, ObjectA> | string[]>, BuildType.Record | BuildType.Array> = true;
 const _FindBuildTypeDistributed_recordUnionMixedObject: IsExact<FindBuildTypeDistributed<Record<PropertyKey, ObjectA> | ObjectA>, BuildType.Record | BuildType.Object> = true;
 
-const _FindBuildType_any: IsExact<FindBuildTypeApi<any>, BuildType.NotValid> = true;
-const _FindBuildType_anyMixed: IsExact<FindBuildTypeApi<any | string[]>, BuildType.NotValid> = true;
-const _FindBuildType_undefined: IsExact<FindBuildTypeApi<undefined>, BuildType.NotValid> = true;
-const _FindBuildType_undefinedMixed: IsExact<FindBuildTypeApi<undefined | string[]>, BuildType.NotConsistent> = true;
-const _FindBuildType_unknown: IsExact<FindBuildTypeApi<unknown>, BuildType.NotValid> = true;
-const _FindBuildType_unknownMixed: IsExact<FindBuildTypeApi<unknown | string[]>, BuildType.NotValid> = true;
-const _FindBuildType_never: IsExact<FindBuildTypeApi<never>, BuildType.NotValid> = true;
-const _FindBuildType_plainObject: IsExact<FindBuildTypeApi<object>, BuildType.NotValid> = true;
-const _FindBuildType_plainObjectMixed: IsExact<FindBuildTypeApi<object | string[]>, BuildType.NotConsistent> = true;
-const _FindBuildType_emptyObject: IsExact<FindBuildTypeApi<{}>, BuildType.NotValid> = true;
-const _FindBuildType_emptyObjectMixed: IsExact<FindBuildTypeApi<{} | string[]>, BuildType.NotConsistent> = true;
-const _FindBuildType_emptyTuple: IsExact<FindBuildTypeApi<[]>, BuildType.NotValid> = true;
-const _FindBuildType_emptyTupleMixed: IsExact<FindBuildTypeApi<[] | string[]>, BuildType.NotConsistent> = true;
-const _FindBuildType_boolean: IsExact<FindBuildTypeApi<boolean>, BuildType.NotValid> = true;
-const _FindBuildType_booleanMixed: IsExact<FindBuildTypeApi<boolean | string[]>, BuildType.NotConsistent> = true;
-const _FindBuildType_primitiveUnion: IsExact<FindBuildTypeApi<boolean | string>, BuildType.NotValid> = true;
-const _FindBuildType_primitiveUnionMixed: IsExact<FindBuildTypeApi<boolean | string | string[]>, BuildType.NotConsistent> = true;
-const _FindBuildType_object: IsExact<FindBuildTypeApi<ObjectA>, BuildType.Object> = true;
-const _FindBuildType_objectUnion: IsExact<FindBuildTypeApi<ObjectA | ObjectA_C>, BuildType.Object> = true;
-const _FindBuildType_objectUnionMixedNumber: IsExact<FindBuildTypeApi<ObjectA | number>, BuildType.NotConsistent> = true;
-const _FindBuildType_objectUnionMixedString: IsExact<FindBuildTypeApi<ObjectA | string>, BuildType.NotConsistent> = true;
-const _FindBuildType_tuple: IsExact<FindBuildTypeApi<[number]>, BuildType.Array> = true;
-const _FindBuildType_tupleUnion: IsExact<FindBuildTypeApi<[number] | [string]>, BuildType.Array> = true;
-const _FindBuildType_array: IsExact<FindBuildTypeApi<number[]>, BuildType.Array> = true;
-const _FindBuildType_arrayUnion: IsExact<FindBuildTypeApi<number[] | string[]>, BuildType.Array> = true;
-const _FindBuildType_readonlyArray: IsExact<FindBuildTypeApi<readonly number[]>, BuildType.Array> = true;
-const _FindBuildType_readonlyArrayUnion: IsExact<FindBuildTypeApi<readonly number[] | readonly string[]>, BuildType.Array> = true;
-const _FindBuildType_mixedArrayUnion: IsExact<FindBuildTypeApi<number[] | readonly string[]>, BuildType.Array> = true;
-const _FindBuildType_mixedArrayUnion2: IsExact<FindBuildTypeApi<number | string[]>, BuildType.NotConsistent> = true;
-const _FindBuildType_record: IsExact<FindBuildTypeApi<Record<PropertyKey, any>>, BuildType.Record> = true;
-const _FindBuildType_recordUnionAll: IsExact<FindBuildTypeApi<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_C>>, BuildType.Record> = true;
-const _FindBuildType_recordUnionCompatible: IsExact<FindBuildTypeApi<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_Compatible>>, BuildType.Record> = true;
-const _FindBuildType_recordUnionSomeNumber: IsExact<FindBuildTypeApi<Record<PropertyKey, ObjectA> | number>, BuildType.NotConsistent> = true;
-const _FindBuildType_recordUnionSomeString: IsExact<FindBuildTypeApi<Record<PropertyKey, ObjectA> | string>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_any: IsExact<FindBuildTypeApi<any>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_anyMixed: IsExact<FindBuildTypeApi<any | string[]>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_undefined: IsExact<FindBuildTypeApi<undefined>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_undefinedMixed: IsExact<FindBuildTypeApi<undefined | string[]>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_unknown: IsExact<FindBuildTypeApi<unknown>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_unknownMixed: IsExact<FindBuildTypeApi<unknown | string[]>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_never: IsExact<FindBuildTypeApi<never>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_plainObject: IsExact<FindBuildTypeApi<object>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_plainObjectMixed: IsExact<FindBuildTypeApi<object | string[]>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_emptyObject: IsExact<FindBuildTypeApi<{}>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_emptyObjectMixed: IsExact<FindBuildTypeApi<{} | string[]>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_emptyTuple: IsExact<FindBuildTypeApi<[]>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_emptyTupleMixed: IsExact<FindBuildTypeApi<[] | string[]>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_boolean: IsExact<FindBuildTypeApi<boolean>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_booleanMixed: IsExact<FindBuildTypeApi<boolean | string[]>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_primitiveUnion: IsExact<FindBuildTypeApi<boolean | string>, BuildType.NotValid> = true;
+const _FindBuildTypeApi_primitiveUnionMixed: IsExact<FindBuildTypeApi<boolean | string | string[]>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_object: IsExact<FindBuildTypeApi<ObjectA>, BuildType.Object> = true;
+const _FindBuildTypeApi_objectUnion: IsExact<FindBuildTypeApi<ObjectA | ObjectA_C>, BuildType.Object> = true;
+const _FindBuildTypeApi_objectUnionMixedNumber: IsExact<FindBuildTypeApi<ObjectA | number>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_objectUnionMixedString: IsExact<FindBuildTypeApi<ObjectA | string>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_tuple: IsExact<FindBuildTypeApi<[number]>, BuildType.Array> = true;
+const _FindBuildTypeApi_tupleUnion: IsExact<FindBuildTypeApi<[number] | [string]>, BuildType.Array> = true;
+const _FindBuildTypeApi_array: IsExact<FindBuildTypeApi<number[]>, BuildType.Array> = true;
+const _FindBuildTypeApi_arrayUnion: IsExact<FindBuildTypeApi<number[] | string[]>, BuildType.Array> = true;
+const _FindBuildTypeApi_readonlyArray: IsExact<FindBuildTypeApi<readonly number[]>, BuildType.Array> = true;
+const _FindBuildTypeApi_readonlyArrayUnion: IsExact<FindBuildTypeApi<readonly number[] | readonly string[]>, BuildType.Array> = true;
+const _FindBuildTypeApi_mixedArrayUnion: IsExact<FindBuildTypeApi<number[] | readonly string[]>, BuildType.Array> = true;
+const _FindBuildTypeApi_mixedArrayUnion2: IsExact<FindBuildTypeApi<number | string[]>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_record: IsExact<FindBuildTypeApi<Record<PropertyKey, any>>, BuildType.Record> = true;
+const _FindBuildTypeApi_recordUnionAll: IsExact<FindBuildTypeApi<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_C>>, BuildType.Record> = true;
+const _FindBuildTypeApi_recordUnionCompatible: IsExact<FindBuildTypeApi<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_Compatible>>, BuildType.Record> = true;
+const _FindBuildTypeApi_recordUnionSomeNumber: IsExact<FindBuildTypeApi<Record<PropertyKey, ObjectA> | number>, BuildType.NotConsistent> = true;
+const _FindBuildTypeApi_recordUnionSomeString: IsExact<FindBuildTypeApi<Record<PropertyKey, ObjectA> | string>, BuildType.NotConsistent> = true;
+
+const _FindValidBuildTypeDistributed_any: IsExact<FindValidBuildTypeDistributed<any>, never> = true;
+// @ts-expect-error typescript collapses unions containing any to any before FindValidBuildTypeDistributed sees it
+const _FindValidBuildTypeDistributed_anyMixed: IsExact<FindValidBuildTypeDistributed<any | ObjectA>, BuildType.Object> = true;
+const _FindValidBuildTypeDistributed_undefined: IsExact<FindValidBuildTypeDistributed<undefined>, never> = true;
+const _FindValidBuildTypeDistributed_undefinedMixed: IsExact<FindValidBuildTypeDistributed<undefined | string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_unknown: IsExact<FindValidBuildTypeDistributed<unknown>, never> = true;
+// @ts-expect-error typescript collapses unions containing unknown to unknown before FindValidBuildTypeDistributed sees it
+const _FindValidBuildTypeDistributed_unknownMixed: IsExact<FindValidBuildTypeDistributed<unknown | string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_never: IsExact<FindValidBuildTypeDistributed<never>, never> = true;
+const _FindValidBuildTypeDistributed_plainObject: IsExact<FindValidBuildTypeDistributed<object>, never> = true;
+const _FindValidBuildTypeDistributed_plainObjectMixed: IsExact<FindValidBuildTypeDistributed<object | string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_emptyObject: IsExact<FindValidBuildTypeDistributed<{}>, never> = true;
+const _FindValidBuildTypeDistributed_emptyObjectMixed: IsExact<FindValidBuildTypeDistributed<{} | string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_emptyTuple: IsExact<FindValidBuildTypeDistributed<[]>, never> = true;
+const _FindValidBuildTypeDistributed_emptyTupleMixed: IsExact<FindValidBuildTypeDistributed<[] | string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_boolean: IsExact<FindValidBuildTypeDistributed<boolean>, never> = true;
+const _FindValidBuildTypeDistributed_booleanMixed: IsExact<FindValidBuildTypeDistributed<boolean | string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_primitiveUnion: IsExact<FindValidBuildTypeDistributed<boolean | string>, never> = true;
+const _FindValidBuildTypeDistributed_primitiveUnionMixed: IsExact<FindValidBuildTypeDistributed<boolean | string | string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_object: IsExact<FindValidBuildTypeDistributed<ObjectA>, BuildType.Object> = true;
+const _FindValidBuildTypeDistributed_objectUnion: IsExact<FindValidBuildTypeDistributed<ObjectA | ObjectA_C>, BuildType.Object> = true;
+const _FindValidBuildTypeDistributed_objectUnionMixedNumber: IsExact<FindValidBuildTypeDistributed<ObjectA | number>, BuildType.Object> = true;
+const _FindValidBuildTypeDistributed_objectUnionMixedString: IsExact<FindValidBuildTypeDistributed<ObjectA | string>, BuildType.Object> = true;
+const _FindValidBuildTypeDistributed_tuple: IsExact<FindValidBuildTypeDistributed<[number]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_tupleUnion: IsExact<FindValidBuildTypeDistributed<[number] | [string]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_array: IsExact<FindValidBuildTypeDistributed<number[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_arrayUnion: IsExact<FindValidBuildTypeDistributed<number[] | string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_readonlyArray: IsExact<FindValidBuildTypeDistributed<readonly number[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_readonlyArrayUnion: IsExact<FindValidBuildTypeDistributed<readonly number[] | readonly string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_mixedArrayUnion: IsExact<FindValidBuildTypeDistributed<number[] | readonly string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_mixedArrayUnion2: IsExact<FindValidBuildTypeDistributed<number | string[]>, BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_record: IsExact<FindValidBuildTypeDistributed<Record<PropertyKey, any>>, BuildType.Record> = true;
+const _FindValidBuildTypeDistributed_recordUnionAll: IsExact<FindValidBuildTypeDistributed<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_C>>, BuildType.Record> = true;
+const _FindValidBuildTypeDistributed_recordUnionCompatible: IsExact<FindValidBuildTypeDistributed<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_Compatible>>, BuildType.Record> = true;
+const _FindValidBuildTypeDistributed_recordUnionObject: IsExact<FindValidBuildTypeDistributed<Record<PropertyKey, ObjectA> | ObjectA>, BuildType.Record | BuildType.Object> = true;
+const _FindValidBuildTypeDistributed_recordUnionArray: IsExact<FindValidBuildTypeDistributed<Record<PropertyKey, ObjectA> | string[]>, BuildType.Record | BuildType.Array> = true;
+const _FindValidBuildTypeDistributed_recordUnionSomeNumber: IsExact<FindValidBuildTypeDistributed<Record<PropertyKey, ObjectA> | number>, BuildType.Record> = true;
+const _FindValidBuildTypeDistributed_recordUnionSomeString: IsExact<FindValidBuildTypeDistributed<Record<PropertyKey, ObjectA> | string>, BuildType.Record> = true;
 
 const _AllUnionMembersAreIdentical_one: AllUnionMembersAreIdentical<string> = true;
 const _AllUnionMembersAreIdentical_same: AllUnionMembersAreIdentical<string | string> = true;

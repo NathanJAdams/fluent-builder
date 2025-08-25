@@ -2,7 +2,7 @@ import { suffixes } from './constants';
 
 type AccumulatedType = 'object' | 'array' | 'record';
 
-export const createBuilder = () => _createBuilder();
+export const createBuilderFromProxy = () => _createBuilder();
 
 const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: any, finalizer: (built: any) => any = (built) => built): any => {
   const handler: ProxyHandler<any> = {
