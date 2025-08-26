@@ -1,10 +1,10 @@
 # ts-fluent-builder
 
-A powerful TypeScript library for building any complex type, 100% fluent, arbitrarily nested, zero config, with full IntelliSense support and compile-time type & data safety mechanisms.
+A powerful TypeScript library for building any complex type, 100% fluent within a single builder, arbitrarily nested, zero config, with full IntelliSense support and compile-time type & data safety mechanisms.
 
 ## Features
 
-- **Simple & Powerful**: A single function to build any complex type, interface, array, record, union or tuple
+- **Simple & Powerful**: A single function to build any complex type, interface, array, tuple, record or object union
 - **Type-Safe**: Full TypeScript support with compile-time validation
 - **Data-Safe**: Prevents overwriting data or building incomplete objects
 - **Fluent API**: Intuitive method chaining for object construction
@@ -122,30 +122,17 @@ const todoList = fluentBuilder<TodoList>()
 ```
 
 ```typescript
-// records
-interface Config {
-  url: string;
-  timeout: number;
-  enabled: boolean;
-}
-
-const config = fluentBuilder<Record<string, Config>>()
-  .set('production', {
-    url: 'https://api.example.com',
-    timeout: 5000,
-    enabled: true
-  })
-  .setObject('development')
-    .url('https://dev.api.example.com')
-    .timeout(10000)
-    .enabled(false)
-    .buildDevelopment()
-  .buildRecord();
+// tuples
+const falsyValues = fluentBuilder<[boolean, number, bigint, string]>()
+  .index0(false)
+  .index1(0)
+  .index2(0n)
+  .index3('')
+  .buildArray();
 ```
 
 ```typescript
-// polymorphic types via unions
-
+// polymorphic types via unions (currently only object unions are supported)
 interface Shape {
   type: string;
   area: number;
@@ -178,13 +165,25 @@ const shapes = fluentBuilder<(Circle | Rectangle)[]>()
 ```
 
 ```typescript
-// tuples
-const falsyValues = fluentBuilder<[boolean, number, bigint, string]>()
-  .index0(false)
-  .index1(0)
-  .index2(0n)
-  .index3('')
-  .buildTuple();
+// records
+interface Config {
+  url: string;
+  timeout: number;
+  enabled: boolean;
+}
+
+const config = fluentBuilder<Record<string, Config>>()
+  .set('production', {
+    url: 'https://api.example.com',
+    timeout: 5000,
+    enabled: true
+  })
+  .setObject('development')
+    .url('https://dev.api.example.com')
+    .timeout(10000)
+    .enabled(false)
+    .buildDevelopment()
+  .buildRecord();
 ```
 
 ### Builder Methods
@@ -204,16 +203,18 @@ There are a few common patterns used:
 .propertyNameArray()    // Start building a nested array  
 .propertyNameObject()   // Start building a nested object
 .propertyNameRecord()   // Start building a nested record
-.propertyNameTuple()    // Start building a nested tuple
 
 .pushArray()            // Start building a nested array to push onto the array
 .pushObject()           // Start building a nested object to push onto the array
 .pushRecord()           // Start building a nested record to push onto the array
 
+.indexNArray()          // Start building a nested array at the array index
+.indexNObject()         // Start building a nested object at the array index
+.indexNRecord()         // Start building a nested record at the array index
+
 .setArray(name)         // Start building a nested array to set on the record
 .setObject(name)        // Start building a nested sub-type to set on the record
 .setRecord(name)        // Start building a nested record to set on the record
-.setTuple(name)         // Start building a nested tuple to set on the record
 ```
 
 #### Termination
@@ -222,11 +223,11 @@ There are a few common patterns used:
 .build()                
 
 // all build...() functions are aliases of build() and can be used as hints to the developer, eg:
+.buildPropertyName()
 .buildRecordName()
 .buildArray()
 .buildObject()
 .buildRecord()
-.buildTuple()
 ```
 
 ## Advanced Usage
@@ -332,6 +333,13 @@ const wrongType = fluentBuilder<User>()
   .id('not-a-number')  // id expects number
   .build();
 
+// ❌ This won't compile - tuple not completely filled
+const missingTupleElement = fluentBuilder<[boolean, string, number]>()
+  .index0(true)
+  .index1('abc')
+  // .index2(123) - missing element
+  .build();
+
 // ❌ This won't compile - duplicate property
 const duplicateProperty = fluentBuilder<User>()
   .id(1)
@@ -360,9 +368,7 @@ const duplicateKey = fluentBuilder<Record<string, boolean>>()
 
 3. **Leverage IntelliSense**: Let your IDE guide you through the available methods
 
-4. **Use a Union Registry**: For polymorphic types, create a union registry to get proper type support
-
-5. **Use the build...() Aliases**: Help later developers easily see where they're looking in the build chain
+4. **Use the build...() Aliases**: Help later developers easily see where they're looking in the build chain
 
 ## Contributing
 
