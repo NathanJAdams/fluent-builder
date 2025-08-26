@@ -1,8 +1,10 @@
-import { AllUnionMembersAreIdentical, ArrayFixed, ArrayLengthWithoutRest, ArrayRest, AsArray, AsRequiredKeys, BuildType, FilterByPartial, FindBuildTypeApi, FindBuildTypeDistributed, FindValidBuildTypeDistributed, HasArrayRest, IsAllObject, IsArray, IsArrayPotentialMatch, IsExact, IsIgnored, IsRecord, IsUnion, IsValid, Keys, UnusedName, Values } from '../utility-types';
+import { AllUnionMembersAreIdentical, ArrayFixed, ArrayLengthWithoutRest, ArrayRest, AsArray, AsRequiredKeys, BuildType, FilterByPartial, FindBuildTypeApi, FindBuildTypeDistributed, FindValidBuildTypeDistributed, HasArrayRest, IsAllObject, IsArray, IsArrayPotentialMatch, IsExact, IsIgnored, IsRecord, IsUnion, IsValid, Keys, IsPartialMatch, UnusedName, Values } from '../utility-types';
 
 type ObjectA = { a: string; x: boolean; };
 type ObjectA_Array = { a: string[]; z: boolean; };
+type ObjectA_Restricted = { a: string; };
 type ObjectA_Compatible = { a: string; x: boolean; b?: number; };
+type ObjectA_Incompatible = { a: string; x: number; };
 type ObjectA_C = { a: string; c: boolean; };
 
 const _IsIgnored_any: IsIgnored<any> = true;
@@ -228,6 +230,14 @@ const _AsRequiredKeys_objectUnionIncompatible_pruned: IsExact<AsRequiredKeys<Obj
 
 const _UnusedName_used: IsExact<UnusedName<{ tom: '' }, 'tom'>, never> = true;
 const _UnusedName_unused: IsExact<UnusedName<{ tom: '' }, 'tim'>, 'tim'> = true;
+
+const _MatchesPartial_exact: IsExact<IsPartialMatch<ObjectA, ObjectA>, true> = true;
+const _MatchesPartial_none: IsExact<IsPartialMatch<ObjectA, {}>, true> = true;
+const _MatchesPartial_incompatible: IsExact<IsPartialMatch<ObjectA, ObjectA_Incompatible>, false> = true;
+const _MatchesPartial_incompatibleExpanded: IsExact<IsPartialMatch<ObjectA, ObjectA_C>, false> = true;
+const _MatchesPartial_compatibleExpanded: IsExact<IsPartialMatch<ObjectA_Restricted, ObjectA>, false> = true;
+const _MatchesPartial_compatibleRestricted: IsExact<IsPartialMatch<ObjectA, ObjectA_Restricted>, true> = true;
+const _MatchesPartial_compatibleRestrictedCollapsed: IsExact<IsPartialMatch<ObjectA_Compatible, ObjectA>, true> = true;
 
 const _FilterByPartial_exact: IsExact<FilterByPartial<ObjectA, ObjectA>, ObjectA> = true;
 const _FilterByPartial_none: IsExact<FilterByPartial<ObjectA, {}>, ObjectA> = true;

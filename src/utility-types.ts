@@ -286,12 +286,24 @@ export type RecordValueType<T> =
   ;
 export type FilterByPartial<T, TPartial> =
   T extends any
-  ? TPartial extends Partial<T>
-  ? keyof TPartial extends keyof T
+  ? IsPartialMatch<T, TPartial> extends true
   ? T
   : never
   : never
-  : never
+  ;
+export type IsPartialMatch<T, TPartial> =
+  keyof TPartial extends never
+  ? true
+  : {
+    [K in keyof TPartial]:
+    [K] extends [keyof T]
+    ? TPartial[K] extends T[K]
+    ? true
+    : false
+    : false;
+  }[keyof TPartial] extends true
+  ? true
+  : false
   ;
 export type AsRequiredKeys<T, TPartial> =
   IsPartialSubset<T, TPartial> extends true
