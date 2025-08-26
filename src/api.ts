@@ -3,25 +3,24 @@ import { ErrorNotBuildable, ErrorNotValid } from './errors';
 import { ObjectBuilderTopLevel } from './object-builder';
 import { createBuilderFromProxy } from './proxy';
 import { RecordBuilderTopLevel } from './record-builder';
-import { IsValid, UnionToIntersection } from './utility-types';
+import { IsArray, IsObject, IsRecord, IsUnion, IsValid } from './utility-types';
 
 export const fluentBuilder = <T>(): FluentBuilder<T> => {
   return createBuilderFromProxy();
 };
 
 export type FluentBuilder<T> =
-  UnionToIntersection<
-    [T] extends [never]
+  [T] extends [never]
+    ? ErrorNotValid
+    : IsValid<T> extends false
       ? ErrorNotValid
-      : T extends any
-        ? IsValid<T> extends false
-          ? ErrorNotValid
-          : T extends readonly any[]
+      : IsObject<T> extends true
+        ? ObjectBuilderTopLevel<T>
+        : IsUnion<T> extends true
+          ? ErrorNotBuildable
+          : IsArray<T> extends true
             ? ArrayBuilderTopLevel<T>
-            : T extends Record<string, any>
-              ? string extends keyof T
-                ? RecordBuilderTopLevel<T>
-                : ObjectBuilderTopLevel<T>
+            : IsRecord<T> extends true
+              ? RecordBuilderTopLevel<T>
               : ErrorNotBuildable
-        : never
-  >;
+  ;

@@ -19,7 +19,13 @@ describe('record-builder', () => {
       expect(people.Employee3.alive).toBe(false);
     });
     test('builds a union of records', () => {
-      fluentBuilder<Record<string, string> | Record<string, number>>().set('a', 'dksfhkds').set('b', 43543).buildRecord();
+      type Small = { a: string; };
+      type Large = { a: string; b?: number; };
+      type Larger = { a: string; c: boolean; };
+      type SINGULAR_RECORDS = Record<string, Small> | Record<string, Large> | Record<string, Larger>;
+      fluentBuilder<SINGULAR_RECORDS>().set('fdsfd', { a: 'fds', b: undefined }).set('abc', { a: '654' }).set('gfdgfd', { a: '432', b: 432 });
+      type ARRAY_RECORDS = Record<string, (Small | Large | Larger)[]>;
+      fluentBuilder<ARRAY_RECORDS>().setArray('abc').pushObject().a('fds').c(true).buildElement().buildAbc().build();
     });
     test('builds sub types', () => {
       const animals = fluentBuilder<Record<string, Dog | Human>>()
@@ -29,18 +35,28 @@ describe('record-builder', () => {
       expect(animals.Jim.kind).toBe('human');
       expect(animals.Sparky.kind).toBe('dog');
     });
+    test('builds record of records', () => {
+      const animals = fluentBuilder<Record<string, Record<string, Dog | Human>>>()
+        .setRecord('a')
+        .setObject('Sparky').kind('dog').food('sausage').buildSparky()
+        .setObject('Jim').kind('human').age(55).grandchildren(undefined).pets(undefined).buildJim()
+        .buildA()
+        .buildRecord();
+      expect(animals.a.Jim.kind).toBe('human');
+      expect(animals.a.Sparky.kind).toBe('dog');
+    });
     test('builds record of array', () => {
       const tom = fluentBuilder<Record<string, Human[]>>()
         .setArray('one')
         .pushObject()
         .grandchildrenRecord()
-        .setArray('Phil')
-        .pushObject().name('Timmy').buildElement()
-        .buildPhil()
         .buildGrandchildren()
-        .age(45)
+        .age(123)
+        .kind('human')
         .buildElement()
         .buildOne()
+        .setArray('Phil')
+        .buildPhil()
         .buildRecord();
       expect(tom.one.length).toBe(1);
     });

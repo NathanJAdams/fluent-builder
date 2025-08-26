@@ -7,43 +7,43 @@ import { Employee, Example, Human } from './test-types';
 describe('compile errors', () => {
   describe('unsupported built types', () => {
     test('never is not supported', () => {
-      fluentBuilder<never>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<never>().error).toBe(errorMessages.notValid);
     });
     test('unknown is not supported', () => {
-      fluentBuilder<unknown>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<unknown>().error).toBe(errorMessages.notValid);
     });
     test('any is not supported', () => {
-      fluentBuilder<any>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<any>().error).toBe(errorMessages.notValid);
     });
     test('null is not supported', () => {
-      fluentBuilder<null>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<null>().error).toBe(errorMessages.notValid);
     });
     test('undefined is not supported', () => {
-      fluentBuilder<undefined>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<undefined>().error).toBe(errorMessages.notValid);
     });
     test('string is not supported', () => {
-      fluentBuilder<string>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<string>().error).toBe(errorMessages.notValid);
     });
     test('number is not supported', () => {
-      fluentBuilder<number>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<number>().error).toBe(errorMessages.notValid);
     });
     test('bigint is not supported', () => {
-      fluentBuilder<bigint>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<bigint>().error).toBe(errorMessages.notValid);
     });
     test('symbol is not supported', () => {
-      fluentBuilder<symbol>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<symbol>().error).toBe(errorMessages.notValid);
     });
     test('function is not supported', () => {
-      fluentBuilder<Function>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<Function>().error).toBe(errorMessages.notValid);
     });
     test('object is not supported', () => {
-      fluentBuilder<object>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<object>().error).toBe(errorMessages.notValid);
     });
     test('empty type is not supported', () => {
-      fluentBuilder<{}>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<{}>().error).toBe(errorMessages.notValid);
     });
     test('empty type is not supported', () => {
-      fluentBuilder<[]>().error(errorMessages.notBuildable);
+      expect(fluentBuilder<[]>().error).toBe(errorMessages.notValid);
     });
   });
   describe('fluent-builder', () => {
@@ -106,7 +106,7 @@ describe('compile errors', () => {
         .setObject('Fred')
         .
         // @ts-expect-error
-        build
+        buildFred
         ();
     });
     test('cannot use the same function twice even if other functions have been called in between', () => {

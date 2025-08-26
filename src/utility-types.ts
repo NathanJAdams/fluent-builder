@@ -52,16 +52,18 @@ export enum BuildType {
 export type IsValid<T> =
   [T] extends [never]
   ? false
-  : T extends any
-  ? IsIgnored<T> extends true
+  : T extends never
+  ? false
+  : IsIgnored<T> extends true
   ? false
   : T extends Primitive
   ? false
   : true
-  : false
   ;
 export type IsIgnored<T> =
   [T] extends [never]
+  ? true
+  : T extends never
   ? true
   : IsAny<T> extends true
   ? true
@@ -94,7 +96,7 @@ export type Primitive =
 export type IsArray<T> =
   IsIgnored<T> extends true
   ? false
-  : T extends readonly unknown[]
+  : [T] extends [readonly unknown[]]
   ? true
   : false
   ;
@@ -122,7 +124,7 @@ export type IsObject<T> =
 export type IsRecord<T> =
   IsIgnored<T> extends true
   ? false
-  : string extends keyof T
+  : [string] extends [keyof T]
   ? true
   : false
   ;
@@ -198,15 +200,19 @@ export type IsExact<T, U> =
   : false
   ;
 export type Keys<T> =
-  IsIgnored<T> extends true
+  T extends any
+  ? IsIgnored<T> extends true
   ? never
   : keyof T
+  : never
   ;
 export type Values<T, K extends string> =
-  IsIgnored<T> extends true
+  T extends any
+  ? IsIgnored<T> extends true
   ? never
   : K extends keyof T
   ? T[K]
+  : never
   : never
   ;
 export type ArrayValues<T, K extends string> =
@@ -274,10 +280,8 @@ export type FilterByPartial<T, TPartial> =
   : never
   ;
 export type AsRequiredKeys<T, TPartial> =
-  T extends any
-  ? IsPartialSubset<T, TPartial> extends true
+  IsPartialSubset<T, TPartial> extends true
   ? Exclude<RequiredKeys<T>, keyof TPartial>
-  : never
   : never
   ;
 type IsPartialSubset<T, TPartial> =

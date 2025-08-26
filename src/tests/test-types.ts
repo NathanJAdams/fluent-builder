@@ -145,10 +145,20 @@ export type Union = UnionMemberNormal | UnionMemberWithNonEmptyArray;
 
 
 export type Library = {
-  books: Record<string, string>;
+  books_value?: string;
+  books_array?: string[];
+  books_record?: Record<string, string>;
+  books_object?: {
+    a: string;
+  };
 };
 export type Places = {
-  cinemas: Record<string, string>;
+  cinemas_value?: string;
+  cinemas_array?: string[];
+  cinemas_record?: Record<string, string>;
+  cinemas_object?: {
+    a: string;
+  };
 };
 
 export type Strings = {

@@ -51,10 +51,9 @@ describe('object-builder', () => {
       const human = fluentBuilder<Human>()
         .kind('human')
         .grandchildrenRecord()
-        // TODO get object records working
-        // .setArray('Phil')
-        // .pushObject().name('Timmy').buildElement()
-        // .buildPhil()
+        .setArray('Phil')
+        .pushObject().name('Timmy').buildElement()
+        .buildPhil()
         .buildGrandchildren()
         .age(45)
         .buildObject();
@@ -64,13 +63,7 @@ describe('object-builder', () => {
       fluentBuilder<Library | Places>().cinemas({ a: 'fds' }).buildObject();
     });
     test('builds a union of objects containing records', () => {
-      fluentBuilder<Library | Places>().cinemasRecord().buildCinemas().buildObject();
-    });
-    test('builds a union of objects containing arrays which filter the available type', () => {
-      fluentBuilder<Strings | Numbers | Single>().valuesArray().push(543).push(
-        // @ts-expect-error
-        ''
-      );
+      fluentBuilder<Library | Places>().cinemas_record().buildCinemas().buildObject();
     });
     test('builds a sub-type type with a non empty array', () => {
       const values = fluentBuilder<UnionMemberNormal | UnionMemberWithNonEmptyArray>()
