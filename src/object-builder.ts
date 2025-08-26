@@ -26,9 +26,9 @@ type ObjectBuilderValue<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exten
       TRemainingUnionNew,
       TPartialNew,
       IsExact<T, TFinal> extends true
-      ? IsUnion<TRemainingUnion> extends true
+      ? IsUnion<TRemainingUnionNew> extends true
       ? TFinal
-      : TRemainingUnion
+      : TRemainingUnionNew
       : TFinal,
       TBuildSuffix
     >
@@ -50,9 +50,9 @@ type ObjectBuilderArray<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exten
         TRemainingUnionNew,
         TPartialNew,
         IsExact<T, TFinal> extends true
-        ? IsUnion<TRemainingUnion> extends true
+        ? IsUnion<TRemainingUnionNew> extends true
         ? TFinal
-        : TRemainingUnion
+        : TRemainingUnionNew
         : TFinal,
         TBuildSuffix>,
       TKey
@@ -74,9 +74,9 @@ type ObjectBuilderObject<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exte
         TRemainingUnionNew,
         TPartial & { [P in TKey]: TObject },
         IsExact<T, TFinal> extends true
-        ? IsUnion<TRemainingUnion> extends true
+        ? IsUnion<TRemainingUnionNew> extends true
         ? TFinal
-        : TRemainingUnion
+        : TRemainingUnionNew
         : TFinal,
         TBuildSuffix
       >,
@@ -99,9 +99,9 @@ type ObjectBuilderRecord<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exte
         TRemainingUnionNew,
         TPartial & { [P in TKey]: TRecord },
         IsExact<T, TFinal> extends true
-        ? IsUnion<TRemainingUnion> extends true
+        ? IsUnion<TRemainingUnionNew> extends true
         ? TFinal
-        : TRemainingUnion
+        : TRemainingUnionNew
         : TFinal,
         TBuildSuffix
       >,

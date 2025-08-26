@@ -60,7 +60,7 @@ describe('object-builder', () => {
       expect(human).not.toBe(undefined);
     });
     test('builds a sub-type from a union with different field types with the same name', () => {
-      fluentBuilder<Library | Places>().cinemas({ a: 'fds' }).buildObject();
+      fluentBuilder<Library | Places>().cinemas_record({ a: 'fds' }).buildObject();
     });
     test('builds a union of objects containing records', () => {
       fluentBuilder<Library | Places>().cinemas_record().buildCinemas().buildObject();
