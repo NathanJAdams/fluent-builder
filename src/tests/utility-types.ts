@@ -1,8 +1,7 @@
-import { AllUnionMembersAreIdentical, ArrayFixed, ArrayLengthWithoutRest, ArrayRest, ArrayValues, AsArray, AsRequiredKeys, BuildType, FilterByPartial, FindBuildTypeApi, FindBuildTypeDistributed, FindValidBuildTypeDistributed, HasArrayRest, IsArray, IsArrayPotentialMatch, IsExact, IsIgnored, IsObject, IsRecord, IsUnion, IsValid, Keys, UnusedName, Values } from '../utility-types';
+import { AllUnionMembersAreIdentical, ArrayFixed, ArrayLengthWithoutRest, ArrayRest, AsArray, AsRequiredKeys, BuildType, FilterByPartial, FindBuildTypeApi, FindBuildTypeDistributed, FindValidBuildTypeDistributed, HasArrayRest, IsAllObject, IsArray, IsArrayPotentialMatch, IsExact, IsIgnored, IsRecord, IsUnion, IsValid, Keys, UnusedName, Values } from '../utility-types';
 
 type ObjectA = { a: string; x: boolean; };
 type ObjectA_Array = { a: string[]; z: boolean; };
-type ObjectA_OptionalArray = { a?: string[]; };
 type ObjectA_Compatible = { a: string; x: boolean; b?: number; };
 type ObjectA_C = { a: string; c: boolean; };
 
@@ -19,7 +18,6 @@ const _IsIgnored_emptyObject: IsIgnored<{}> = true;
 const _IsIgnored_emptyObjectMixed: IsIgnored<{} | string[]> = true;
 const _IsIgnored_emptyTuple: IsIgnored<[]> = true;
 const _IsIgnored_emptyTupleMixed: IsIgnored<[] | string[]> = true;
-
 const _IsIgnored_boolean: IsIgnored<boolean> = false;
 const _IsIgnored_booleanMixed: IsIgnored<boolean | string[]> = false;
 const _IsIgnored_primitiveUnion: IsIgnored<boolean | string> = false;
@@ -64,9 +62,11 @@ const _IsArray_objectUnion: IsArray<ObjectA | ObjectA_C> = false;
 const _IsArray_objectUnionMixedNumber: IsArray<ObjectA | number> = false;
 const _IsArray_objectUnionMixedString: IsArray<ObjectA | string[]> = false;
 const _IsArray_tuple: IsArray<[number]> = true;
+const _IsArray_tupleUnionIdentical: IsArray<[number] | [number]> = true;
 const _IsArray_tupleUnion: IsArray<[number] | [string]> = true;
 const _IsArray_array: IsArray<number[]> = true;
 const _IsArray_arrayUnion: IsArray<number[] | string[]> = true;
+const _IsArray_arrayUnionIdentical: IsArray<number[] | number[]> = true;
 const _IsArray_readonlyArray: IsArray<readonly number[]> = true;
 const _IsArray_readonlyArrayUnion: IsArray<readonly number[] | readonly string[]> = true;
 const _IsArray_mixedArrayUnion: IsArray<number[] | readonly string[]> = true;
@@ -77,23 +77,23 @@ const _IsArray_recordUnionCompatible: IsArray<Record<PropertyKey, ObjectA> | Rec
 const _IsArray_recordUnionSomeNumber: IsArray<Record<PropertyKey, ObjectA> | number[]> = false;
 const _IsArray_recordUnionSomeString: IsArray<Record<PropertyKey, ObjectA> | string[]> = false;
 
-const _IsObject_object: IsObject<ObjectA> = true;
-const _IsObject_objectUnion: IsObject<ObjectA | ObjectA_C> = true;
-const _IsObject_objectUnionMixedNumber: IsObject<ObjectA | number> = false;
-const _IsObject_objectUnionMixedString: IsObject<ObjectA | string> = false;
-const _IsObject_tuple: IsObject<[number]> = false;
-const _IsObject_tupleUnion: IsObject<[number] | [string]> = false;
-const _IsObject_array: IsObject<number[]> = false;
-const _IsObject_arrayUnion: IsObject<number[] | string[]> = false;
-const _IsObject_readonlyArray: IsObject<readonly number[]> = false;
-const _IsObject_readonlyArrayUnion: IsObject<readonly number[] | readonly string[]> = false;
-const _IsObject_mixedArrayUnion: IsObject<number[] | readonly string[]> = false;
-const _IsObject_mixedArrayUnion2: IsArray<number | string[]> = false;
-const _IsObject_record: IsObject<Record<PropertyKey, any>> = false;
-const _IsObject_recordUnionAll: IsObject<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_C>> = false;
-const _IsObject_recordUnionCompatible: IsObject<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_Compatible>> = false;
-const _IsObject_recordUnionSomeNumber: IsObject<Record<PropertyKey, ObjectA> | number> = false;
-const _IsObject_recordUnionSomeString: IsObject<Record<PropertyKey, ObjectA> | string> = false;
+const _IsAllObject_object: IsAllObject<ObjectA> = true;
+const _IsAllObject_objectUnion: IsAllObject<ObjectA | ObjectA_C> = true;
+const _IsAllObject_objectUnionMixedNumber: IsAllObject<ObjectA | number> = false;
+const _IsAllObject_objectUnionMixedString: IsAllObject<ObjectA | string> = false;
+const _IsAllObject_tuple: IsAllObject<[number]> = false;
+const _IsAllObject_tupleUnion: IsAllObject<[number] | [string]> = false;
+const _IsAllObject_array: IsAllObject<number[]> = false;
+const _IsAllObject_arrayUnion: IsAllObject<number[] | string[]> = false;
+const _IsAllObject_readonlyArray: IsAllObject<readonly number[]> = false;
+const _IsAllObject_readonlyArrayUnion: IsAllObject<readonly number[] | readonly string[]> = false;
+const _IsAllObject_mixedArrayUnion: IsAllObject<number[] | readonly string[]> = false;
+const _IsAllObject_mixedArrayUnion2: IsAllObject<number | string[]> = false;
+const _IsAllObject_record: IsAllObject<Record<PropertyKey, any>> = false;
+const _IsAllObject_recordUnionAll: IsAllObject<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_C>> = false;
+const _IsAllObject_recordUnionCompatible: IsAllObject<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_Compatible>> = false;
+const _IsAllObject_recordUnionSomeNumber: IsAllObject<Record<PropertyKey, ObjectA> | number> = false;
+const _IsAllObject_recordUnionSomeString: IsAllObject<Record<PropertyKey, ObjectA> | string> = false;
 
 const _IsRecord_object: IsRecord<ObjectA> = false;
 const _IsRecord_objectUnion: IsRecord<ObjectA | ObjectA_C> = false;
@@ -104,7 +104,7 @@ const _IsRecord_arrayUnion: IsRecord<number[] | string[]> = false;
 const _IsRecord_readonlyArray: IsRecord<readonly number[]> = false;
 const _IsRecord_readonlyArrayUnion: IsRecord<readonly number[] | readonly string[]> = false;
 const _IsRecord_mixedArrayUnion: IsRecord<number[] | readonly string[]> = false;
-const _IsRecord_mixedArrayUnion2: IsArray<number | string[]> = false;
+const _IsRecord_mixedArrayUnion2: IsRecord<number | string[]> = false;
 const _IsRecord_record: IsRecord<Record<PropertyKey, any>> = true;
 const _IsRecord_recordUnionAll: IsRecord<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_C>> = true;
 const _IsRecord_recordUnionCompatible: IsRecord<Record<PropertyKey, ObjectA> | Record<PropertyKey, ObjectA_Compatible>> = true;
@@ -171,12 +171,6 @@ const _Keys_record: IsExact<Keys<Record<string, string>>, string> = true;
 
 const _Values_object: IsExact<Values<ObjectA, 'a'>, string> = true;
 const _Values_record: IsExact<Values<Record<string, string>, 'a'>, string> = true;
-
-const _ArrayValues_wrongField: IsExact<ArrayValues<ObjectA_Array, 'b'>, never> = true;
-const _ArrayValues_optionalArray: IsExact<ArrayValues<ObjectA_OptionalArray, 'a'>, string[] | undefined> = true;
-const _ArrayValues_array: IsExact<ArrayValues<ObjectA_Array, 'a'>, string[]> = true;
-const _ArrayValues_notArray: IsExact<ArrayValues<ObjectA, 'a'>, never> = true;
-const _ArrayValues_record: IsExact<ArrayValues<Record<string, string>, 'a'>, never> = true;
 
 const _ArrayRest_array: IsExact<ArrayRest<number[]>, number> = true;
 const _ArrayRest_arrayUnion: IsExact<ArrayRest<number[] | string[]>, number | string> = true;

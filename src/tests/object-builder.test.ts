@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { fluentBuilder } from '../api';
-import { Example, Human, Library, Numbers, Places, Single, Strings, SubA, SubB, SubBB, UnionMemberNormal, UnionMemberWithNonEmptyArray } from './test-types';
+import { Example, Human, Library, Places, SubA, SubB, SubBB, UnionMemberNormal, UnionMemberWithNonEmptyArray } from './test-types';
 
 describe('object-builder', () => {
   describe('building', () => {
@@ -63,7 +63,7 @@ describe('object-builder', () => {
       fluentBuilder<Library | Places>().cinemas_record({ a: 'fds' }).buildObject();
     });
     test('builds a union of objects containing records', () => {
-      fluentBuilder<Library | Places>().cinemas_record().buildCinemas().buildObject();
+      fluentBuilder<Library | Places>().cinemas_recordRecord().buildCinemas_record().buildObject();
     });
     test('builds a sub-type type with a non empty array', () => {
       const values = fluentBuilder<UnionMemberNormal | UnionMemberWithNonEmptyArray>()

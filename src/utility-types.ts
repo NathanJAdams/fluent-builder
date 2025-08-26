@@ -52,32 +52,28 @@ export enum BuildType {
 export type IsValid<T> =
   [T] extends [never]
   ? false
-  : T extends never
+  : T extends Primitive
   ? false
   : IsIgnored<T> extends true
-  ? false
-  : T extends Primitive
   ? false
   : true
   ;
 export type IsIgnored<T> =
   [T] extends [never]
   ? true
-  : T extends never
-  ? true
-  : IsAny<T> extends true
-  ? true
   : T extends null
   ? true
   : T extends undefined
   ? true
-  : IsExact<T, unknown> extends true
-  ? true
   : T extends Function
   ? true
-  : T extends readonly []
-  ? true
   : keyof T extends never
+  ? true
+  : IsAny<T> extends true
+  ? true
+  : IsExact<T, unknown> extends true
+  ? true
+  : IsEmptyTuple<T> extends true
   ? true
   : false
   ;
@@ -86,6 +82,12 @@ type IsAny<T> =
   ? true
   : false
   ;
+type IsEmptyTuple<T> =
+  T extends []
+  ? number extends T['length']
+  ? false
+  : true
+  : false;
 export type Primitive =
   | string
   | number
@@ -94,16 +96,19 @@ export type Primitive =
   | symbol
   ;
 export type IsArray<T> =
-  IsIgnored<T> extends true
-  ? false
-  : [T] extends [readonly unknown[]]
+  [T] extends [readonly unknown[]]
   ? true
   : false
   ;
-export type IsObject<T> =
-  IsIgnored<T> extends true
+export type IsNonUnionArray<T> =
+  IsUnion<T> extends true
   ? false
-  : [T] extends [never]
+  : T extends readonly unknown[]
+  ? true
+  : false
+  ;
+export type IsAllObject<T> =
+  IsIgnored<T> extends true
   ? false
   : false extends (
     T extends any
@@ -122,29 +127,47 @@ export type IsObject<T> =
   : true
   ;
 export type IsRecord<T> =
-  IsIgnored<T> extends true
-  ? false
-  : [string] extends [keyof T]
+  [T] extends [Record<string, any>]
+  ? string extends keyof T
   ? true
   : false
+  : false
+  ;
+export type IsNonUnionRecord<T> =
+  IsUnion<T> extends true
+  ? false
+  : T extends Record<string, any>
+  ? string extends keyof T
+  ? true
+  : false
+  : false
+  ;
+export type ValueFromKey<T, TKey> =
+  [T] extends [never]
+  ? never
+  : T extends any
+  ? IsIgnored<T> extends true
+  ? never
+  : TKey extends keyof T
+  ? Required<T>[TKey]
+  : never
+  : never
   ;
 export type AsArray<T> =
-  T extends any
-  ? IsArray<T> extends true
+  T extends readonly unknown[]
   ? T
-  : never
   : never
   ;
 export type AsObject<T> =
   T extends any
-  ? IsObject<T> extends true
+  ? IsAllObject<T> extends true
   ? T
   : never
   : never
   ;
 export type AsRecord<T> =
-  T extends any
-  ? IsRecord<T> extends true
+  T extends Record<string, any>
+  ? string extends keyof T
   ? T
   : never
   : never
@@ -211,15 +234,6 @@ export type Values<T, K extends string> =
   ? IsIgnored<T> extends true
   ? never
   : K extends keyof T
-  ? T[K]
-  : never
-  : never
-  ;
-export type ArrayValues<T, K extends string> =
-  IsIgnored<T> extends true
-  ? never
-  : [K] extends [keyof T]
-  ? IsArray<Required<T>[K]> extends true
   ? T[K]
   : never
   : never
