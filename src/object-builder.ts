@@ -2,7 +2,7 @@ import { ArrayBuilderNested } from './array-builder';
 import { Builder } from './builder';
 import { suffixes } from './constants';
 import { RecordBuilderNested } from './record-builder';
-import { AsArray, AsObject, AsRecord, AsRequiredKeys, FilterByPartial, IsArray, IsExact, IsObject, IsRecord, Keys, Values } from './utility-types';
+import { AsArray, AsObject, AsRecord, AsRequiredKeys, FilterByPartial, IsArray, IsExact, IsObject, IsRecord, IsUnion, Keys, Values } from './utility-types';
 
 export type ObjectBuilderTopLevel<T> = ObjectBuilderNested<T, T, typeof suffixes.object>;
 export type ObjectBuilderNested<T, TFinal, TBuildSuffix extends string> = ObjectBuilderWithPartial<T, T, {}, TFinal, TBuildSuffix>;
@@ -25,7 +25,11 @@ type ObjectBuilderValue<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exten
       T,
       TRemainingUnionNew,
       TPartialNew,
-      IsExact<T, TFinal> extends true ? TPartialNew : TFinal,
+      IsExact<T, TFinal> extends true
+      ? IsUnion<TRemainingUnion> extends true
+      ? TFinal
+      : TRemainingUnion
+      : TFinal,
       TBuildSuffix
     >
     : never
@@ -45,7 +49,11 @@ type ObjectBuilderArray<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exten
         T,
         TRemainingUnionNew,
         TPartialNew,
-        IsExact<T, TFinal> extends true ? TPartialNew : TFinal,
+        IsExact<T, TFinal> extends true
+        ? IsUnion<TRemainingUnion> extends true
+        ? TFinal
+        : TRemainingUnion
+        : TFinal,
         TBuildSuffix>,
       TKey
     >
@@ -65,7 +73,11 @@ type ObjectBuilderObject<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exte
         T,
         TRemainingUnionNew,
         TPartial & { [P in TKey]: TObject },
-        IsExact<T, TFinal> extends true ? TPartialNew : TFinal,
+        IsExact<T, TFinal> extends true
+        ? IsUnion<TRemainingUnion> extends true
+        ? TFinal
+        : TRemainingUnion
+        : TFinal,
         TBuildSuffix
       >,
       TKey
@@ -86,7 +98,11 @@ type ObjectBuilderRecord<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exte
         T,
         TRemainingUnionNew,
         TPartial & { [P in TKey]: TRecord },
-        IsExact<T, TFinal> extends true ? TPartialNew : TFinal,
+        IsExact<T, TFinal> extends true
+        ? IsUnion<TRemainingUnion> extends true
+        ? TFinal
+        : TRemainingUnion
+        : TFinal,
         TBuildSuffix
       >,
       TKey
