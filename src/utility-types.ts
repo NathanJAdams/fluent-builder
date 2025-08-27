@@ -229,6 +229,11 @@ export type UnionToIntersection<U> =
   ? I
   : never
   ;
+export type RecordKeyType<T> =
+  T extends Record<infer K, any>
+  ? K
+  : never
+  ;
 export type RecordValueType<T> =
   T extends Record<ObjectOrRecordKey, infer V>
   ? V

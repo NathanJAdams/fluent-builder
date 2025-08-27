@@ -5,6 +5,16 @@ import { Dog, Employee, Human } from './test-types';
 
 describe('record-builder', () => {
   describe('building', () => {
+    test('builds a record with number keys', () => {
+      fluentBuilder<Record<number, Employee>>()
+        .setObject(43).age(33).alive(true).name('Ted')
+        .build43()
+        .buildRecord();
+      fluentBuilder<Record<string, Employee>>()
+        .setObject('abc').age(33).alive(true).name('Ted')
+        .buildAbc()
+        .buildRecord();
+    });
     test('builds a record type with literal entries', () => {
       const people = fluentBuilder<Record<string, Employee>>()
         .setObject('Employee1').name('Jim').age(42).alive(true).buildEmployee1()

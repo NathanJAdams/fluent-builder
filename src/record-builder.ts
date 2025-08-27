@@ -3,7 +3,7 @@ import { Builder } from './builder';
 import { suffixes } from './constants';
 import { ErrorNotBuildable, ErrorNotValid } from './errors';
 import { ObjectBuilderNested } from './object-builder';
-import { AsArray, AsObject, AsRecord, IsExact, IsUnion, ObjectOrRecordKey, RecordValueType, UnusedName } from './utility-types';
+import { AsArray, AsObject, AsRecord, IsExact, IsUnion, ObjectOrRecordKey, RecordKeyType, RecordValueType, UnusedName } from './utility-types';
 
 export type RecordBuilderTopLevel<T> =
   AsRecord<T> extends infer TRecord
@@ -39,7 +39,7 @@ type PartialRecordBuilder<TRecord extends Record<ObjectOrRecordKey, TValue>, TVa
   ;
 
 type RecordBuilderValue<TRecord extends Record<ObjectOrRecordKey, any>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
-  set: <TName extends ObjectOrRecordKey>(name: UnusedName<TEntries, TName>, value: TValue) =>
+  set: <TName extends RecordKeyType<TRecord>>(name: UnusedName<TEntries, TName>, value: TValue) =>
     PartialRecordBuilder<
       TRecord,
       TValue,
@@ -56,7 +56,7 @@ type RecordBuilderArray<TRecord extends Record<ObjectOrRecordKey, TValue>, TValu
   ? [TNestedArray] extends [never]
   ? object
   : {
-    setArray: <TName extends ObjectOrRecordKey>(name: UnusedName<TEntries, TName>) =>
+    setArray: <TName extends RecordKeyType<TRecord>>(name: UnusedName<TEntries, TName>) =>
       ArrayBuilderNested<
         TNestedArray,
         PartialRecordBuilder<
@@ -77,7 +77,7 @@ type RecordBuilderObject<TRecord extends Record<ObjectOrRecordKey, TValue>, TVal
   ? [TNestedObject] extends [never]
   ? object
   : {
-    setObject: <TName extends ObjectOrRecordKey>(name: UnusedName<TEntries, TName>) =>
+    setObject: <TName extends RecordKeyType<TRecord>>(name: UnusedName<TEntries, TName>) =>
       ObjectBuilderNested<
         TNestedObject,
         PartialRecordBuilder<
@@ -98,7 +98,7 @@ type RecordBuilderRecord<TRecord extends Record<ObjectOrRecordKey, TValue>, TVal
   ? [TNestedRecord] extends [never]
   ? object
   : {
-    setRecord: <TName extends ObjectOrRecordKey>(name: UnusedName<TEntries, TName>) =>
+    setRecord: <TName extends RecordKeyType<TRecord>>(name: UnusedName<TEntries, TName>) =>
       RecordBuilderNested<
         TNestedRecord,
         PartialRecordBuilder<
