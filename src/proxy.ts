@@ -1,4 +1,5 @@
 import { suffixes } from './constants';
+import { ObjectOrRecordKey } from './utility-types';
 
 type AccumulatedType = 'object' | 'array' | 'record';
 
@@ -54,7 +55,7 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
       if (nestedAccumulatedType === undefined) {
         if (property === 'set') {
           return (name: string, value: any) => {
-            const record = accumulatedValues as Record<string, any>;
+            const record = accumulatedValues as Record<ObjectOrRecordKey, any>;
             record[name] = value;
             return proxy;
           };
@@ -72,7 +73,7 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
           };
         } else {
           return (value: any) => {
-            const object = accumulatedValues as Record<string, any>;
+            const object = accumulatedValues as Record<ObjectOrRecordKey, any>;
             const key = toKey(property);
             object[key] = value;
             return proxy;
@@ -81,7 +82,7 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
       }
       if (property.startsWith('set')) {
         return (name: string) => _createBuilder(nestedAccumulatedType, nestedAccumulatedValues, value => {
-          const record = accumulatedValues as Record<string, any>;
+          const record = accumulatedValues as Record<ObjectOrRecordKey, any>;
           record[name] = value;
           return proxy;
         });
@@ -99,7 +100,7 @@ const _createBuilder = (accumulatedType?: AccumulatedType, accumulatedValues?: a
         });
       } else {
         return () => _createBuilder(nestedAccumulatedType, nestedAccumulatedValues, value => {
-          const object = accumulatedValues as Record<string, any>;
+          const object = accumulatedValues as Record<ObjectOrRecordKey, any>;
           const key = toKey(property);
           object[key] = value;
           return proxy;
