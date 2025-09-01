@@ -214,9 +214,9 @@ export type HasArrayRest<T extends readonly unknown[]> =
   ? false
   : true
   ;
-export type ArrayLengthWithoutRest<T extends readonly unknown[]> = _ArrayLengthWithoutRest<T, 0>;
+export type ArrayLengthWithoutRest<T extends readonly unknown[]> = _ArrayLengthWithoutRest<Required<T>, 0>;
 type _ArrayLengthWithoutRest<T extends readonly unknown[], Count extends number> =
-  T extends [unknown, ...infer Rest]
+  T extends readonly [unknown, ...infer Rest]
   ? _ArrayLengthWithoutRest<Rest, Increment<Count>>
   : Count
   ;

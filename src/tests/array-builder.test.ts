@@ -55,7 +55,7 @@ describe('array-builder', () => {
       expect(values[0]['Tim'].food).toBe('chicken');
       expect(values[1]['Jenny'].food).toBe('pork');
     });
-    test('instance', () => {
+    test('object', () => {
       const values = fluentBuilder<Employee[]>()
         .pushObject().name('Tim').age(31).alive(true).buildElement()
         .pushObject().name('Ann').age(48).alive(true).buildElement()
@@ -74,6 +74,19 @@ describe('array-builder', () => {
       expect(values[0]).toBe(true);
       expect(values[1]).toBe('hello');
       expect(values[2]).toBe(3543);
+    });
+    test('builds a tuple type with optional entries', () => {
+      const valuesOne = fluentBuilder<[string, string?]>()
+        .index0('abc')
+        .buildArray();
+      expect(valuesOne[0]).toBe('abc');
+      expect(valuesOne[1]).toBe(undefined);
+      const valuesAll = fluentBuilder<[string, string?]>()
+        .index0('abc')
+        .index1('xyz')
+        .buildArray();
+      expect(valuesAll[0]).toBe('abc');
+      expect(valuesAll[1]).toBe('xyz');
     });
     test('array with fixed elements', () => {
       const array = fluentBuilder<[number, ...number[]]>().index0(78).push(54).buildArray();

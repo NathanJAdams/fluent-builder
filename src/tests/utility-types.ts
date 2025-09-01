@@ -201,6 +201,9 @@ const _ArrayLengthWithoutRest_arrayTupleUnion: IsExact<ArrayLengthWithoutRest<nu
 const _ArrayLengthWithoutRest_tupleNoRest: IsExact<ArrayLengthWithoutRest<[number]>, 1> = true;
 const _ArrayLengthWithoutRest_tupleNoRestUnion: IsExact<ArrayLengthWithoutRest<[number] | [string]>, 1> = true;
 const _ArrayLengthWithoutRest_tuple: IsExact<ArrayLengthWithoutRest<[...number[]]>, 0> = true;
+const _ArrayLengthWithoutRest_tupleOptional1: IsExact<ArrayLengthWithoutRest<[number, number?]>, 2> = true;
+const _ArrayLengthWithoutRest_tupleOptional2: IsExact<ArrayLengthWithoutRest<[number, number?, number?]>, 3> = true;
+const _ArrayLengthWithoutRest_tupleOptional3: IsExact<ArrayLengthWithoutRest<[number, number?, number?, number?]>, 4> = true;
 const _ArrayLengthWithoutRest_tupleUnion: IsExact<ArrayLengthWithoutRest<[...number[]] | [...string[]]>, 0> = true;
 const _ArrayLengthWithoutRest_tupleWithFixed: IsExact<ArrayLengthWithoutRest<[string, boolean, ...number[]]>, 2> = true;
 const _ArrayLengthWithoutRest_tupleWithFixedUnion: IsExact<ArrayLengthWithoutRest<[string, boolean, ...number[]] | [boolean, ...string[]]>, 1 | 2> = true;

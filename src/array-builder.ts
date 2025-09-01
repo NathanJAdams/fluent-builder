@@ -33,6 +33,11 @@ type ArrayBuilderIndexedOrRest<TArray extends readonly any[], TIndex extends num
   ;
 
 type ArrayBuilderIndexed<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+  & (
+    undefined extends TArray[TIndex]
+    ? Builder<TFinal, TBuildSuffix>
+    : object
+  )
   & ArrayBuilderIndexedValue<TArray, TIndex, TRest, TFinal, TBuildSuffix>
   & (
     IsUnion<TArray> extends true

@@ -2,7 +2,7 @@ import { ArrayBuilderNested } from './array-builder';
 import { Builder } from './builder';
 import { suffixes } from './constants';
 import { RecordBuilderNested } from './record-builder';
-import { AsArray, AsObject, AsRecord, AsRequiredKeys, FilterByPartial, IsAllObject, IsAllArray, IsExact, IsAllRecord, IsUnion, Keys, ObjectOrRecordKey, ValueFromKey, Values } from './utility-types';
+import { AsArray, AsObject, AsRecord, AsRequiredKeys, FilterByPartial, IsAllArray, IsAllObject, IsAllRecord, IsExact, IsUnion, Keys, ObjectOrRecordKey, ValueFromKey, Values } from './utility-types';
 
 export type ObjectBuilderTopLevel<T> = ObjectBuilderNested<T, T, typeof suffixes.object>;
 export type ObjectBuilderNested<T, TFinal, TBuildSuffix extends ObjectOrRecordKey> = ObjectBuilderWithPartial<T, T, {}, TFinal, TBuildSuffix>;
