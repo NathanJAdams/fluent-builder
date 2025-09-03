@@ -7,7 +7,7 @@ import { AsArray, AsObject, AsRecord, AsRequiredKeys, FilterByPartial, IsAllArra
 export type ObjectBuilderTopLevel<T> = ObjectBuilderNested<T, T, typeof suffixes.object>;
 export type ObjectBuilderNested<T, TFinal, TBuildSuffix extends ObjectOrRecordKey> = ObjectBuilderWithPartial<T, T, {}, TFinal, TBuildSuffix>;
 
-type ObjectBuilderWithPartial<TObject, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ObjectBuilderWithPartial<TObject, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   & ([AsRequiredKeys<TRemainingUnion, TPartial>] extends [never] ? Builder<TFinal, TBuildSuffix> : object)
   & ObjectBuilderValue<TObject, TRemainingUnion, TPartial, TFinal, TBuildSuffix>
   & ObjectBuilderArray<TObject, TRemainingUnion, TPartial, TFinal, TBuildSuffix>
@@ -15,7 +15,7 @@ type ObjectBuilderWithPartial<TObject, TRemainingUnion, TPartial, TFinal, TBuild
   & ObjectBuilderRecord<TObject, TRemainingUnion, TPartial, TFinal, TBuildSuffix>
   ;
 
-type ObjectBuilderValue<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
+export type ObjectBuilderValue<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
   [TKey in string & Exclude<Keys<TRemainingUnion>, keyof TPartial>]:
   <TValue extends Values<TRemainingUnion, TKey>>
     (value: TValue) =>
@@ -37,7 +37,7 @@ type ObjectBuilderValue<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exten
   ;
 };
 
-type ObjectBuilderArray<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
+export type ObjectBuilderArray<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
   [TKey in (string & Exclude<Keys<TRemainingUnion>, keyof TPartial>) as IsAllArray<ValueFromKey<TRemainingUnion, TKey>> extends true ? `${TKey}${typeof suffixes.array}` : never]:
   <TArray extends AsArray<Values<TRemainingUnion, TKey>>>
     () =>
@@ -61,7 +61,7 @@ type ObjectBuilderArray<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exten
     : never;
 };
 
-type ObjectBuilderObject<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
+export type ObjectBuilderObject<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
   [TKey in (string & Exclude<Keys<TRemainingUnion>, keyof TPartial>) as IsAllObject<Required<TRemainingUnion>[TKey]> extends true ? `${TKey}${typeof suffixes.object}` : never]:
   <TObject extends AsObject<Values<TRemainingUnion, TKey>>>
     () =>
@@ -86,7 +86,7 @@ type ObjectBuilderObject<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix exte
     : never;
 };
 
-type ObjectBuilderRecord<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
+export type ObjectBuilderRecord<T, TRemainingUnion, TPartial, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
   [TKey in (string & Exclude<Keys<TRemainingUnion>, keyof TPartial>) as IsAllRecord<ValueFromKey<TRemainingUnion, TKey>> extends true ? `${TKey}${typeof suffixes.record}` : never]:
   <TRecord extends AsRecord<Values<TRemainingUnion, TKey>>>
     () =>

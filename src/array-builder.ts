@@ -26,13 +26,13 @@ export type ArrayBuilderNested<T, TFinal, TBuildSuffix extends ObjectOrRecordKey
   : never
   ;
 
-type ArrayBuilderIndexedOrRest<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ArrayBuilderIndexedOrRest<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   IsExact<ArrayLengthWithoutRest<TArray>, TIndex> extends true
   ? ArrayBuilderRest<TArray, TRest, TFinal, TBuildSuffix>
   : ArrayBuilderIndexed<TArray, TIndex, TRest, TFinal, TBuildSuffix>
   ;
 
-type ArrayBuilderIndexed<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ArrayBuilderIndexed<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   & (
     undefined extends TArray[TIndex]
     ? Builder<TFinal, TBuildSuffix>
@@ -49,7 +49,7 @@ type ArrayBuilderIndexed<TArray extends readonly any[], TIndex extends number, T
     )
   )
   ;
-type ArrayBuilderRest<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ArrayBuilderRest<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   & Builder<TFinal, TBuildSuffix>
   & (
     [TRest] extends [never]
@@ -69,14 +69,14 @@ type ArrayBuilderRest<TArray extends readonly any[], TRest, TFinal, TBuildSuffix
   )
   ;
 
-type ArrayBuilderIndexedValue<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
+export type ArrayBuilderIndexedValue<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
   [K in `index${TIndex}`]: (value: TArray[TIndex]) => ArrayBuilderIndexedOrRest<TArray, Increment<TIndex>, TRest, TFinal, TBuildSuffix>;
 };
-type ArrayBuilderRestValue<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
+export type ArrayBuilderRestValue<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
   push: (value: TRest) => ArrayBuilderRest<TArray, TRest, TFinal, TBuildSuffix>;
 };
 
-type ArrayBuilderIndexedArray<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ArrayBuilderIndexedArray<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   AsArray<TArray[TIndex]> extends infer TNestedElement
   ? [TNestedElement] extends [never]
   ? object
@@ -91,7 +91,7 @@ type ArrayBuilderIndexedArray<TArray extends readonly any[], TIndex extends numb
   }
   : never
   ;
-type ArrayBuilderRestArray<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ArrayBuilderRestArray<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   AsArray<TRest> extends infer TNestedElement
   ? [TNestedElement] extends [never]
   ? object
@@ -107,7 +107,7 @@ type ArrayBuilderRestArray<TArray extends readonly any[], TRest, TFinal, TBuildS
   : never
   ;
 
-type ArrayBuilderIndexedObject<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ArrayBuilderIndexedObject<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   AsObject<TArray[TIndex]> extends infer TNestedElement
   ? [TNestedElement] extends [never]
   ? object
@@ -121,7 +121,7 @@ type ArrayBuilderIndexedObject<TArray extends readonly any[], TIndex extends num
   }
   : never
   ;
-type ArrayBuilderRestObject<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ArrayBuilderRestObject<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   AsObject<TRest> extends infer TNestedElement
   ? [TNestedElement] extends [never]
   ? object
@@ -136,7 +136,7 @@ type ArrayBuilderRestObject<TArray extends readonly any[], TRest, TFinal, TBuild
   : never
   ;
 
-type ArrayBuilderIndexedRecord<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ArrayBuilderIndexedRecord<TArray extends readonly any[], TIndex extends number, TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   AsRecord<TArray[TIndex]> extends infer TNestedElement
   ? [TNestedElement] extends [never]
   ? object
@@ -150,7 +150,7 @@ type ArrayBuilderIndexedRecord<TArray extends readonly any[], TIndex extends num
   }
   : never
   ;
-type ArrayBuilderRestRecord<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type ArrayBuilderRestRecord<TArray extends readonly any[], TRest, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   AsRecord<TRest> extends infer TNestedElement
   ? [TNestedElement] extends [never]
   ? object

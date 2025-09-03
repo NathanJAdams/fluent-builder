@@ -30,7 +30,7 @@ export type RecordBuilderNested<
   : never
   ;
 
-type PartialRecordBuilder<TRecord extends Record<ObjectOrRecordKey, TValue>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type PartialRecordBuilder<TRecord extends Record<ObjectOrRecordKey, TValue>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   & Builder<TFinal, TBuildSuffix>
   & RecordBuilderValue<TRecord, TValue, TEntries, TFinal, TBuildSuffix>
   & RecordBuilderArray<TRecord, TValue, TEntries, TFinal, TBuildSuffix>
@@ -38,7 +38,7 @@ type PartialRecordBuilder<TRecord extends Record<ObjectOrRecordKey, TValue>, TVa
   & RecordBuilderRecord<TRecord, TValue, TEntries, TFinal, TBuildSuffix>
   ;
 
-type RecordBuilderValue<TRecord extends Record<ObjectOrRecordKey, any>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
+export type RecordBuilderValue<TRecord extends Record<ObjectOrRecordKey, any>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> = {
   set: <TName extends RecordKeyType<TRecord>>(name: UnusedName<TEntries, TName>, value: TValue) =>
     PartialRecordBuilder<
       TRecord,
@@ -51,7 +51,7 @@ type RecordBuilderValue<TRecord extends Record<ObjectOrRecordKey, any>, TValue, 
     >;
 };
 
-type RecordBuilderArray<TRecord extends Record<ObjectOrRecordKey, TValue>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type RecordBuilderArray<TRecord extends Record<ObjectOrRecordKey, TValue>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   AsArray<TValue> extends infer TNestedArray
   ? [TNestedArray] extends [never]
   ? object
@@ -72,7 +72,7 @@ type RecordBuilderArray<TRecord extends Record<ObjectOrRecordKey, TValue>, TValu
   : never
   ;
 
-type RecordBuilderObject<TRecord extends Record<ObjectOrRecordKey, TValue>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type RecordBuilderObject<TRecord extends Record<ObjectOrRecordKey, TValue>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   AsObject<TValue> extends infer TNestedObject
   ? [TNestedObject] extends [never]
   ? object
@@ -93,7 +93,7 @@ type RecordBuilderObject<TRecord extends Record<ObjectOrRecordKey, TValue>, TVal
   : never
   ;
 
-type RecordBuilderRecord<TRecord extends Record<ObjectOrRecordKey, TValue>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
+export type RecordBuilderRecord<TRecord extends Record<ObjectOrRecordKey, TValue>, TValue, TEntries, TFinal, TBuildSuffix extends ObjectOrRecordKey> =
   AsRecord<TValue> extends infer TNestedRecord
   ? [TNestedRecord] extends [never]
   ? object
